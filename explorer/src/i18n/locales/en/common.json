@@ -1,0 +1,167 @@
+{
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "zh": "中文"
+  },
+  "connection": {
+    "checking": "Connecting…",
+    "online": "System Online",
+    "offline": "Backend Unreachable"
+  },
+  "nav": {
+    "brand": "Semantica Knowledge Explorer",
+    "explore": {
+      "label": "Knowledge Explorer",
+      "hint": "Graph and vocabulary browsing"
+    },
+    "analyze": {
+      "label": "Analyze",
+      "hint": "Query and inspect the dataset"
+    },
+    "decisions": {
+      "label": "Decisions",
+      "hint": "Decision chains and precedent review"
+    },
+    "enrich": {
+      "label": "Enrich",
+      "hint": "Import, export, and merge workflows"
+    },
+    "manage": {
+      "label": "Manage",
+      "hint": "Lineage and governance tooling"
+    },
+    "ontologyHub": {
+      "label": "Ontology Hub",
+      "hint": "Schema governance, registry, and vocabulary management"
+    }
+  },
+  "landing": {
+    "version": "Semantica v2 · Semantic Intelligence",
+    "kicker": "Knowledge Explorer",
+    "kickerAria": "Product category",
+    "titleLine1": "Navigate knowledge",
+    "titleLine2Prefix": "like a ",
+    "titleLine2Highlight": "living system.",
+    "subtitle": "Semantica turns dense knowledge graphs into a navigable command center — discovery, reasoning, provenance, distance intelligence, and decision context, all in one interface.",
+    "ctaPrimary": "Open Semantica Explorer",
+    "ctaSecondary": "Run Reasoning",
+    "previewAria": "Knowledge graph preview",
+    "previewTab": "Semantica Explorer",
+    "commandLabel": "Search command, node, or concept",
+    "commandMeta": "distance heatmap · focused view · causal path",
+    "dossier": {
+      "kicker": "Entity Dossier",
+      "distanceBand": "Distance band",
+      "distanceBandValue": "Near",
+      "pathCoherence": "Path coherence",
+      "provenance": "Provenance",
+      "provenanceValue": "Audited"
+    },
+    "timeline": {
+      "title": "Temporal Evidence",
+      "coverage": "{{percent}}% coverage"
+    },
+    "metricsAria": "System status",
+    "metrics": {
+      "nodes": "Knowledge nodes",
+      "edges": "Relationships mapped",
+      "modes": "Graph modes",
+      "datasetOnline": "Dataset online",
+      "readyToExplore": "Ready to explore",
+      "live": "Live",
+      "ready": "Ready",
+      "active": "Active",
+      "standby": "Standby"
+    },
+    "workspacesAria": "Workspaces",
+    "workspacesTitle": "Workspaces",
+    "primaryCard": {
+      "eyebrow": "Primary Workspace",
+      "title": "Semantica Explorer",
+      "description": "Full graph, grouped communities, focused neighborhoods, and distance intelligence — all in one canvas."
+    },
+    "launchers": {
+      "vocabulary": {
+        "label": "Vocabulary",
+        "description": "Schemes and terms"
+      },
+      "analyze": {
+        "label": "Analyze",
+        "description": "Inference and queries"
+      },
+      "decisions": {
+        "label": "Decisions",
+        "description": "Chains and precedents"
+      },
+      "enrich": {
+        "label": "Enrich",
+        "description": "Import and resolve"
+      },
+      "manage": {
+        "label": "Manage",
+        "description": "Lineage and ontology"
+      }
+    },
+    "capabilityAria": "Intelligence capabilities",
+    "capabilityLabel": "Intelligence Layer",
+    "capabilities": {
+      "distanceHeatmap": "Distance Heatmap",
+      "focusedNeighborhood": "Focused Neighborhood",
+      "groupedCommunities": "Grouped Communities",
+      "traceCausalPath": "Trace Causal Path",
+      "provenanceDossier": "Provenance Dossier"
+    }
+  },
+  "workspace": {
+    "defaultKicker": "Workspace",
+    "discardDraftConfirm": "Discard the unapplied Markdown draft and leave this resource?",
+    "explore": {
+      "title": "Explore",
+      "kickerGraph": "Graph Studio",
+      "kickerMemories": "Memory Browser",
+      "kickerVocabulary": "Vocabulary Browser",
+      "subtitleMemories": "Browse and edit canonical AgentMemory documents.",
+      "subtitleDefault": "Browse the graph and switch views without leaving the workspace.",
+      "tabGraph": "Semantica Explorer",
+      "tabMemories": "Memories",
+      "tabVocabulary": "Vocabulary Browser"
+    },
+    "analyze": {
+      "title": "Analyze",
+      "subtitle": "Query the active graph and test inference rules.",
+      "kickerReasoning": "Reasoning Engine",
+      "kickerSparql": "SPARQL Query",
+      "tabReasoning": "Reasoning Playground",
+      "tabSparql": "SPARQL Querying"
+    },
+    "decisions": {
+      "title": "Decisions",
+      "subtitle": "Inspect decision chains, causal context, and precedent matches.",
+      "kicker": "Decision Intelligence"
+    },
+    "enrich": {
+      "title": "Enrich",
+      "subtitle": "Import, export, reconcile, and audit graph entities.",
+      "kicker": "Knowledge Audit",
+      "tabImport": "Import and Export",
+      "tabMerge": "Diff and Merge",
+      "tabResolve": "Entity Resolution",
+      "tabRegistry": "Registry"
+    },
+    "ontologyHub": {
+      "title": "Ontology Hub",
+      "subtitle": "Load, browse, edit, and govern ontologies and vocabularies.",
+      "kicker": "Schema Governance"
+    },
+    "manage": {
+      "title": "Manage",
+      "subtitle": "Review provenance, lineage, ontology, and governance context.",
+      "kicker": "Graph Governance",
+      "tabLineage": "PROV-O Lineage",
+      "tabKgOverview": "KG Overview",
+      "tabOntology": "Ontology Summary"
+    },
+    "loadingFallback": "Loading workspace…"
+  }
+}

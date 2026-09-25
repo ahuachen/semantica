@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import {
   ArrowRight,
   BrainCircuit,
@@ -19,6 +20,7 @@ import {
 import { ErrorBoundary } from './ErrorBoundary';
 import { ExploreWorkspaceTabs, type ExploreView } from './ExploreWorkspaceTabs';
 import { fetchAgentMemoryAvailability } from './explorerCapabilities';
+import { LanguageSwitcher } from './ui/LanguageSwitcher';
 import { hasOntologyUrlState } from './workspaces/OntologyWorkspace/ontologyUrlState';
 
 const DecisionWorkspace = lazy(() => import('./workspaces/DecisionWorkspace/DecisionWorkspace').then((module) => ({ default: module.DecisionWorkspace })));
@@ -43,8 +45,7 @@ type ManageView = 'lineage' | 'kg-overview' | 'ontology';
 
 type NavItem = {
   id: WorkspaceId;
-  label: string;
-  hint: string;
+  i18nKey: 'explore' | 'analyze' | 'decisions' | 'enrich' | 'manage' | 'ontologyHub';
   icon: LucideIcon;
 };
 
@@ -72,11 +73,11 @@ type GraphStatsPayload = {
 
 type ConnectionStatus = 'checking' | 'online' | 'offline';
 
-const CONNECTION_STATUS_LABEL: Record<ConnectionStatus, string> = {
-  checking: 'Connecting…',
-  online: 'System Online',
-  offline: 'Backend Unreachable',
-};
+const CONNECTION_STATUS_KEY = {
+  checking: 'connection.checking',
+  online: 'connection.online',
+  offline: 'connection.offline',
+} as const satisfies Record<ConnectionStatus, string>;
 
 const queryClient = new QueryClient();
 
@@ -88,12 +89,12 @@ const PREVIEW_DOTS = Array.from({ length: 42 }, (_, i) => ({
 }));
 
 const navItems: NavItem[] = [
-  { id: 'explore', label: 'Knowledge Explorer', hint: 'Graph and vocabulary browsing', icon: Database },
-  { id: 'analyze', label: 'Analyze', hint: 'Query and inspect the dataset', icon: FileSearch },
-  { id: 'decisions', label: 'Decisions', hint: 'Decision chains and precedent review', icon: Scale },
-  { id: 'enrich', label: 'Enrich', hint: 'Import, export, and merge workflows', icon: GitBranchPlus },
-  { id: 'manage', label: 'Manage', hint: 'Lineage and governance tooling', icon: Settings2 },
-  { id: 'ontology-hub', label: 'Ontology Hub', hint: 'Schema governance, registry, and vocabulary management', icon: GitMerge },
+  { id: 'explore', i18nKey: 'explore', icon: Database },
+  { id: 'analyze', i18nKey: 'analyze', icon: FileSearch },
+  { id: 'decisions', i18nKey: 'decisions', icon: Scale },
+  { id: 'enrich', i18nKey: 'enrich', icon: GitBranchPlus },
+  { id: 'manage', i18nKey: 'manage', icon: Settings2 },
+  { id: 'ontology-hub', i18nKey: 'ontologyHub', icon: GitMerge },
 ];
 
 function readInitialWorkspace(): WorkspaceId {
@@ -557,6 +558,42 @@ const shellStyles = `
     letter-spacing: 0.02em;
   }
 
+  .lang-switcher {
+    margin-top: auto;
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 14px;
+    border: 1px solid var(--panel-border);
+    background: rgba(74, 163, 255, 0.05);
+  }
+
+  .lang-option {
+    flex: 1;
+    min-width: 0;
+    padding: 6px 0;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: 160ms ease;
+  }
+
+  .lang-option:hover {
+    color: var(--text-main);
+    background: rgba(74, 163, 255, 0.08);
+  }
+
+  .lang-option[data-active='true'] {
+    color: var(--text-main);
+    background: linear-gradient(180deg, rgba(74, 163, 255, 0.2), rgba(74, 163, 255, 0.08));
+    border-color: rgba(127, 208, 255, 0.24);
+  }
+
   .workspace-shell {
     flex: 1;
     min-width: 0;
@@ -830,6 +867,14 @@ const shellStyles = `
     background: linear-gradient(100deg, #7fd0ff 0%, #4cc38a 50%, #f2b66d 100%);
     -webkit-background-clip: text;
     background-clip: text;
+  }
+
+  /* CJK glyphs are full-width, so the Latin-tuned clamp overflows the hero
+     column and the negative tracking closes the characters up too far.
+     Matches on <html lang>, which the i18n setup keeps in sync. */
+  :lang(zh) .landing-title {
+    font-size: clamp(30px, 3.6vw, 56px);
+    letter-spacing: 0;
   }
 
   .landing-subtitle {
@@ -1464,7 +1509,7 @@ function WorkspaceShell({
   subtitle,
   tabs,
   compact = false,
-  kicker = 'Workspace',
+  kicker,
   children,
 }: {
   title: string;
@@ -1474,11 +1519,12 @@ function WorkspaceShell({
   kicker?: string;
   children: ReactNode;
 }) {
+  const { t } = useTranslation();
   return (
     <section className="workspace-shell">
       <header className={`workspace-header${compact ? " workspace-header--compact" : ""}`}>
         <div className="workspace-header-main">
-          <div className="workspace-kicker">{kicker}</div>
+          <div className="workspace-kicker">{kicker ?? t('workspace.defaultKicker')}</div>
           <div className="workspace-title-block">
             <h1 className="workspace-title">{title}</h1>
             {subtitle ? <div className="workspace-subtitle">{subtitle}</div> : null}
@@ -1492,7 +1538,8 @@ function WorkspaceShell({
 }
 
 function WorkspaceFallback() {
-  return <div className="workspace-loading">Loading workspace…</div>;
+  const { t } = useTranslation();
+  return <div className="workspace-loading">{t('workspace.loadingFallback')}</div>;
 }
 
 function getNumberStat(payload: GraphStatsPayload, keys: Array<keyof GraphStatsPayload>) {
@@ -1524,6 +1571,7 @@ function WelcomeScreen({
   onOpenDecisions: () => void;
   onOpenManage: () => void;
 }) {
+  const { t } = useTranslation();
   const [stats, setStats] = useState<{ nodes: number | null; edges: number | null; status: ConnectionStatus }>({
     nodes: null,
     edges: null,
@@ -1559,40 +1607,44 @@ function WelcomeScreen({
 
   const isOnline = stats.status === 'online';
   const metrics: LandingMetric[] = [
-    { label: 'Knowledge nodes', value: formatMetric(stats.nodes, 'Live'), tone: 'cyan' },
-    { label: 'Relationships mapped', value: formatMetric(stats.edges, 'Ready'), tone: 'mint' },
-    { label: 'Graph modes', value: '3', tone: 'amber' },
-    { label: isOnline ? 'Dataset online' : 'Ready to explore', value: isOnline ? 'Active' : 'Standby', tone: 'rose' },
+    { label: t('landing.metrics.nodes'), value: formatMetric(stats.nodes, t('landing.metrics.live')), tone: 'cyan' },
+    { label: t('landing.metrics.edges'), value: formatMetric(stats.edges, t('landing.metrics.ready')), tone: 'mint' },
+    { label: t('landing.metrics.modes'), value: '3', tone: 'amber' },
+    {
+      label: isOnline ? t('landing.metrics.datasetOnline') : t('landing.metrics.readyToExplore'),
+      value: isOnline ? t('landing.metrics.active') : t('landing.metrics.standby'),
+      tone: 'rose',
+    },
   ];
 
   const secondaryLaunchers: LandingAction[] = [
     {
-      label: 'Vocabulary',
-      description: 'Schemes and terms',
+      label: t('landing.launchers.vocabulary.label'),
+      description: t('landing.launchers.vocabulary.description'),
       icon: Database,
       onClick: onOpenVocabulary,
     },
     {
-      label: 'Analyze',
-      description: 'Inference and queries',
+      label: t('landing.launchers.analyze.label'),
+      description: t('landing.launchers.analyze.description'),
       icon: BrainCircuit,
       onClick: onOpenReasoning,
     },
     {
-      label: 'Decisions',
-      description: 'Chains and precedents',
+      label: t('landing.launchers.decisions.label'),
+      description: t('landing.launchers.decisions.description'),
       icon: Scale,
       onClick: onOpenDecisions,
     },
     {
-      label: 'Enrich',
-      description: 'Import and resolve',
+      label: t('landing.launchers.enrich.label'),
+      description: t('landing.launchers.enrich.description'),
       icon: GitBranchPlus,
       onClick: onOpenImport,
     },
     {
-      label: 'Manage',
-      description: 'Lineage and ontology',
+      label: t('landing.launchers.manage.label'),
+      description: t('landing.launchers.manage.description'),
       icon: ShieldCheck,
       onClick: onOpenManage,
     },
@@ -1607,54 +1659,52 @@ function WelcomeScreen({
           <div className="landing-copy">
             <div className="landing-status-bar" data-status={stats.status}>
               <div className="landing-status-dot" />
-              <span className="landing-status-text">{CONNECTION_STATUS_LABEL[stats.status]}</span>
+              <span className="landing-status-text">{t(CONNECTION_STATUS_KEY[stats.status])}</span>
               <div className="landing-status-divider" />
-              <span className="landing-status-version">Semantica v2 · Semantic Intelligence</span>
+              <span className="landing-status-version">{t('landing.version')}</span>
             </div>
 
-            <div className="landing-kicker" aria-label="Product category">
+            <div className="landing-kicker" aria-label={t('landing.kickerAria')}>
               <span className="landing-kicker-mark" aria-hidden="true" />
-              Knowledge Explorer
+              {t('landing.kicker')}
             </div>
 
             <h1 className="landing-title">
-              Navigate knowledge<br />
-              like a <span>living system.</span>
+              {t('landing.titleLine1')}<br />
+              {t('landing.titleLine2Prefix')}<span>{t('landing.titleLine2Highlight')}</span>
             </h1>
             <p className="landing-subtitle">
-              Semantica turns dense knowledge graphs into a navigable command center —
-              discovery, reasoning, provenance, distance intelligence, and decision context,
-              all in one interface.
+              {t('landing.subtitle')}
             </p>
 
             <div className="landing-cta-row">
               <button className="landing-cta-primary" type="button" onClick={onOpenNetwork}>
                 <Network size={16} />
-                Open Semantica Explorer
+                {t('landing.ctaPrimary')}
                 <ArrowRight size={15} />
               </button>
               <button className="landing-cta-secondary" type="button" onClick={onOpenReasoning}>
                 <BrainCircuit size={15} />
-                Run Reasoning
+                {t('landing.ctaSecondary')}
               </button>
             </div>
           </div>
 
           {/* ── Preview panel ── */}
-          <div className="landing-preview" aria-label="Knowledge graph preview">
+          <div className="landing-preview" aria-label={t('landing.previewAria')}>
             <div className="landing-preview-topbar" aria-hidden="true">
               <div className="landing-preview-dot" />
               <div className="landing-preview-dot" />
               <div className="landing-preview-dot" />
-              <div className="landing-preview-tab">Semantica Explorer</div>
+              <div className="landing-preview-tab">{t('landing.previewTab')}</div>
             </div>
             <div className="landing-command-card">
               <div className="landing-command-icon">
                 <Search size={15} />
               </div>
               <div>
-                <div className="landing-command-label">Search command, node, or concept</div>
-                <div className="landing-command-meta">distance heatmap · focused view · causal path</div>
+                <div className="landing-command-label">{t('landing.commandLabel')}</div>
+                <div className="landing-command-meta">{t('landing.commandMeta')}</div>
               </div>
             </div>
             <div className="landing-preview-orbit">
@@ -1694,16 +1744,16 @@ function WelcomeScreen({
               </svg>
             </div>
             <div className="landing-dossier-card">
-              <div className="landing-dossier-kicker">Entity Dossier</div>
+              <div className="landing-dossier-kicker">{t('landing.dossier.kicker')}</div>
               <div className="landing-dossier-title">NSRP1</div>
-              <div className="landing-dossier-row"><span>Distance band</span><strong>Near</strong></div>
-              <div className="landing-dossier-row"><span>Path coherence</span><strong>0.84</strong></div>
-              <div className="landing-dossier-row"><span>Provenance</span><strong>Audited</strong></div>
+              <div className="landing-dossier-row"><span>{t('landing.dossier.distanceBand')}</span><strong>{t('landing.dossier.distanceBandValue')}</strong></div>
+              <div className="landing-dossier-row"><span>{t('landing.dossier.pathCoherence')}</span><strong>0.84</strong></div>
+              <div className="landing-dossier-row"><span>{t('landing.dossier.provenance')}</span><strong>{t('landing.dossier.provenanceValue')}</strong></div>
             </div>
             <div className="landing-timeline-card">
               <div className="landing-timeline-header">
-                <span className="landing-timeline-title">Temporal Evidence</span>
-                <span className="landing-timeline-badge">66% coverage</span>
+                <span className="landing-timeline-title">{t('landing.timeline.title')}</span>
+                <span className="landing-timeline-badge">{t('landing.timeline.coverage', { percent: 66 })}</span>
               </div>
               <div className="landing-timeline-track" />
               <div className="landing-timeline-labels">
@@ -1715,7 +1765,7 @@ function WelcomeScreen({
         </section>
 
         {/* ── Live metrics ── */}
-        <div className="landing-metrics" aria-label="System status">
+        <div className="landing-metrics" aria-label={t('landing.metricsAria')}>
           {metrics.map((metric) => (
             <div key={metric.label} className="landing-metric" data-tone={metric.tone}>
               <div className="landing-metric-value">{metric.value}</div>
@@ -1725,18 +1775,18 @@ function WelcomeScreen({
         </div>
 
         {/* ── Workspace grid ── */}
-        <section aria-label="Workspaces">
+        <section aria-label={t('landing.workspacesAria')}>
           <div className="landing-section-header">
-            <h2 className="landing-section-title">Workspaces</h2>
+            <h2 className="landing-section-title">{t('landing.workspacesTitle')}</h2>
             <div className="landing-section-line" />
           </div>
           <div className="landing-workspace-grid">
             <button className="landing-workspace-card landing-workspace-card--primary" type="button" onClick={onOpenNetwork}>
               <div>
-                <div className="landing-workspace-card-eyebrow">Primary Workspace</div>
-                <div className="landing-workspace-card-title">Semantica Explorer</div>
+                <div className="landing-workspace-card-eyebrow">{t('landing.primaryCard.eyebrow')}</div>
+                <div className="landing-workspace-card-title">{t('landing.primaryCard.title')}</div>
                 <div className="landing-workspace-card-desc">
-                  Full graph, grouped communities, focused neighborhoods, and distance intelligence — all in one canvas.
+                  {t('landing.primaryCard.description')}
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -1765,13 +1815,13 @@ function WelcomeScreen({
         </section>
 
         {/* ── Capability band ── */}
-        <section className="landing-capability-band" aria-label="Intelligence capabilities">
-          <div className="landing-capability-label">Intelligence Layer</div>
-          <div className="landing-capability"><Radar size={12} />Distance Heatmap</div>
-          <div className="landing-capability"><Network size={12} />Focused Neighborhood</div>
-          <div className="landing-capability"><GitMerge size={12} />Grouped Communities</div>
-          <div className="landing-capability"><Route size={12} />Trace Causal Path</div>
-          <div className="landing-capability"><ShieldCheck size={12} />Provenance Dossier</div>
+        <section className="landing-capability-band" aria-label={t('landing.capabilityAria')}>
+          <div className="landing-capability-label">{t('landing.capabilityLabel')}</div>
+          <div className="landing-capability"><Radar size={12} />{t('landing.capabilities.distanceHeatmap')}</div>
+          <div className="landing-capability"><Network size={12} />{t('landing.capabilities.focusedNeighborhood')}</div>
+          <div className="landing-capability"><GitMerge size={12} />{t('landing.capabilities.groupedCommunities')}</div>
+          <div className="landing-capability"><Route size={12} />{t('landing.capabilities.traceCausalPath')}</div>
+          <div className="landing-capability"><ShieldCheck size={12} />{t('landing.capabilities.provenanceDossier')}</div>
         </section>
 
       </div>
@@ -1780,6 +1830,7 @@ function WelcomeScreen({
 }
 
 export default function App() {
+  const { t } = useTranslation();
   const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceId>(readInitialWorkspace);
   const [exploreView, setExploreView] = useState<ExploreView>('graph');
   const [analyzeView, setAnalyzeView] = useState<AnalyzeView>('reasoning');
@@ -1801,7 +1852,7 @@ export default function App() {
 
   const confirmDiscardExploreDraft = () => (
     !exploreDraftDirty
-    || window.confirm("Discard the unapplied Markdown draft and leave this resource?")
+    || window.confirm(t('workspace.discardDraftConfirm'))
   );
 
   const switchExploreView = (nextView: ExploreView) => {
@@ -1848,9 +1899,9 @@ export default function App() {
     if (activeWorkspace === 'explore') {
       return (
         <WorkspaceShell
-          title="Explore"
-          subtitle={exploreView === 'graph' ? undefined : exploreView === 'memories' ? "Browse and edit canonical AgentMemory documents." : "Browse the graph and switch views without leaving the workspace."}
-          kicker={exploreView === 'graph' ? 'Graph Studio' : exploreView === 'memories' ? 'Memory Browser' : 'Vocabulary Browser'}
+          title={t('workspace.explore.title')}
+          subtitle={exploreView === 'graph' ? undefined : exploreView === 'memories' ? t('workspace.explore.subtitleMemories') : t('workspace.explore.subtitleDefault')}
+          kicker={exploreView === 'graph' ? t('workspace.explore.kickerGraph') : exploreView === 'memories' ? t('workspace.explore.kickerMemories') : t('workspace.explore.kickerVocabulary')}
           compact
           tabs={
             <ExploreWorkspaceTabs
@@ -1878,16 +1929,16 @@ export default function App() {
     if (activeWorkspace === 'analyze') {
       return (
         <WorkspaceShell
-          title="Analyze"
-          subtitle="Query the active graph and test inference rules."
-          kicker={analyzeView === 'reasoning' ? 'Reasoning Engine' : 'SPARQL Query'}
+          title={t('workspace.analyze.title')}
+          subtitle={t('workspace.analyze.subtitle')}
+          kicker={analyzeView === 'reasoning' ? t('workspace.analyze.kickerReasoning') : t('workspace.analyze.kickerSparql')}
           tabs={
             <>
               <button className="workspace-tab" data-active={analyzeView === 'reasoning'} onClick={() => setAnalyzeView('reasoning')}>
-                Reasoning Playground
+                {t('workspace.analyze.tabReasoning')}
               </button>
               <button className="workspace-tab" data-active={analyzeView === 'sparql'} onClick={() => setAnalyzeView('sparql')}>
-                SPARQL Querying
+                {t('workspace.analyze.tabSparql')}
               </button>
             </>
           }
@@ -1904,9 +1955,9 @@ export default function App() {
     if (activeWorkspace === 'decisions') {
       return (
         <WorkspaceShell
-          title="Decisions"
-          subtitle="Inspect decision chains, causal context, and precedent matches."
-          kicker="Decision Intelligence"
+          title={t('workspace.decisions.title')}
+          subtitle={t('workspace.decisions.subtitle')}
+          kicker={t('workspace.decisions.kicker')}
         >
           <ErrorBoundary key="decisions">
             <Suspense fallback={<WorkspaceFallback />}>
@@ -1920,22 +1971,22 @@ export default function App() {
     if (activeWorkspace === 'enrich') {
       return (
         <WorkspaceShell
-          title="Enrich"
-          subtitle="Import, export, reconcile, and audit graph entities."
-          kicker="Knowledge Audit"
+          title={t('workspace.enrich.title')}
+          subtitle={t('workspace.enrich.subtitle')}
+          kicker={t('workspace.enrich.kicker')}
           tabs={
             <>
               <button className="workspace-tab" data-active={enrichView === 'import'} onClick={() => setEnrichView('import')}>
-                Import and Export
+                {t('workspace.enrich.tabImport')}
               </button>
               <button className="workspace-tab" data-active={enrichView === 'merge'} onClick={() => setEnrichView('merge')}>
-                Diff and Merge
+                {t('workspace.enrich.tabMerge')}
               </button>
               <button className="workspace-tab" data-active={enrichView === 'resolve'} onClick={() => setEnrichView('resolve')}>
-                Entity Resolution
+                {t('workspace.enrich.tabResolve')}
               </button>
               <button className="workspace-tab" data-active={enrichView === 'registry'} onClick={() => setEnrichView('registry')}>
-                Registry
+                {t('workspace.enrich.tabRegistry')}
               </button>
             </>
           }
@@ -1955,9 +2006,9 @@ export default function App() {
     if (activeWorkspace === 'ontology-hub') {
       return (
         <WorkspaceShell
-          title="Ontology Hub"
-          subtitle="Load, browse, edit, and govern ontologies and vocabularies."
-          kicker="Schema Governance"
+          title={t('workspace.ontologyHub.title')}
+          subtitle={t('workspace.ontologyHub.subtitle')}
+          kicker={t('workspace.ontologyHub.kicker')}
           compact
         >
           <ErrorBoundary key="ontology-hub">
@@ -1977,19 +2028,19 @@ export default function App() {
 
     return (
       <WorkspaceShell
-        title="Manage"
-        subtitle="Review provenance, lineage, ontology, and governance context."
-        kicker="Graph Governance"
+        title={t('workspace.manage.title')}
+        subtitle={t('workspace.manage.subtitle')}
+        kicker={t('workspace.manage.kicker')}
         tabs={
           <>
             <button className="workspace-tab" data-active={manageView === 'lineage'} onClick={() => setManageView('lineage')}>
-              PROV-O Lineage
+              {t('workspace.manage.tabLineage')}
             </button>
             <button className="workspace-tab" data-active={manageView === 'kg-overview'} onClick={() => setManageView('kg-overview')}>
-              KG Overview
+              {t('workspace.manage.tabKgOverview')}
             </button>
             <button className="workspace-tab" data-active={manageView === 'ontology'} onClick={() => setManageView('ontology')}>
-              Ontology Summary
+              {t('workspace.manage.tabOntology')}
             </button>
           </>
         }
@@ -2013,19 +2064,20 @@ export default function App() {
       <style>{shellStyles}</style>
       <div className="app-shell">
         <aside className="app-rail">
-          <button className="brand-pill" title="Semantica Knowledge Explorer" onClick={() => switchWorkspace('welcome')} style={{ cursor: 'pointer', border: '1px solid rgba(127,208,255,0.18)' }}>SKE</button>
-          {navItems.map(({ id, label, hint, icon: Icon }) => (
+          <button className="brand-pill" title={t('nav.brand')} onClick={() => switchWorkspace('welcome')} style={{ cursor: 'pointer', border: '1px solid rgba(127,208,255,0.18)' }}>SKE</button>
+          {navItems.map(({ id, i18nKey, icon: Icon }) => (
             <button
               key={id}
               className="nav-button"
               data-active={activeWorkspace === id}
               onClick={() => switchWorkspace(id)}
-              title={hint}
+              title={t(`nav.${i18nKey}.hint`)}
             >
               <Icon size={20} />
-              <span className="nav-label">{label}</span>
+              <span className="nav-label">{t(`nav.${i18nKey}.label`)}</span>
             </button>
           ))}
+          <LanguageSwitcher />
         </aside>
         {renderWorkspace()}
       </div>

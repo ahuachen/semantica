@@ -20,6 +20,10 @@ Object.defineProperty(globalThis, "navigator", {
 });
 dom.window.confirm = () => true;
 
+// Initialise i18next before rendering: components read their labels through
+// useTranslation, which falls back to emitting raw keys without an instance.
+await import("../src/i18n/index.ts");
+
 // Testing Library and the components must load after the jsdom globals above.
 const { act, cleanup, fireEvent, render, waitFor } = await import(
   "@testing-library/react"

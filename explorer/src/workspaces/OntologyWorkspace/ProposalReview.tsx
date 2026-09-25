@@ -12,6 +12,7 @@ import {
   Minus,
   Edit,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface Proposal {
   proposal_id: string;
@@ -35,6 +36,7 @@ interface DiffChange {
 }
 
 export function ProposalReview({ proposalId }: { proposalId: string }) {
+  const { t } = useTranslation("ontology");
   const [proposal, setProposal] = useState<Proposal | null>(null);
   const [diff, setDiff] = useState<DiffChange[]>([]);
   const [selectedElement, setSelectedElement] = useState<string | null>(null);
@@ -46,21 +48,21 @@ export function ProposalReview({ proposalId }: { proposalId: string }) {
     // Generate diff from impact analysis
     if (prop.impact_analysis) {
       if (prop.impact_analysis.class_adds > 0) {
-        changes.push({ type: "added", element: `Classes (${prop.impact_analysis.class_adds})` });
+        changes.push({ type: "added", element: t("proposal.diffClasses", { count: prop.impact_analysis.class_adds }) });
       }
       if (prop.impact_analysis.class_removals > 0) {
-        changes.push({ type: "removed", element: `Classes (${prop.impact_analysis.class_removals})` });
+        changes.push({ type: "removed", element: t("proposal.diffClasses", { count: prop.impact_analysis.class_removals }) });
       }
       if (prop.impact_analysis.property_changes > 0) {
-        changes.push({ type: "modified", element: `Properties (${prop.impact_analysis.property_changes})` });
+        changes.push({ type: "modified", element: t("proposal.diffProperties", { count: prop.impact_analysis.property_changes }) });
       }
       if (prop.impact_analysis.restriction_changes > 0) {
-        changes.push({ type: "modified", element: `Restrictions (${prop.impact_analysis.restriction_changes})` });
+        changes.push({ type: "modified", element: t("proposal.diffRestrictions", { count: prop.impact_analysis.restriction_changes }) });
       }
     }
 
     setDiff(changes);
-  }, []);
+  }, [t]);
 
   const loadProposal = useCallback(async () => {
     try {
@@ -113,9 +115,9 @@ export function ProposalReview({ proposalId }: { proposalId: string }) {
       }
     } catch (error) {
       console.error("Failed to add comment:", error);
-      alert("Failed to add comment");
+      alert(t("proposal.addCommentError"));
     }
-  }, [selectedElement, commentText, proposal, loadProposal]);
+  }, [selectedElement, commentText, proposal, loadProposal, t]);
 
   const approveProposal = useCallback(async () => {
     if (!proposal) return;
@@ -124,14 +126,14 @@ export function ProposalReview({ proposalId }: { proposalId: string }) {
         method: "POST",
       });
       if (response.ok) {
-        alert("Proposal approved");
+        alert(t("proposal.approvedAlert"));
         loadProposal();
       }
     } catch (error) {
       console.error("Failed to approve proposal:", error);
-      alert("Failed to approve proposal");
+      alert(t("proposal.approveError"));
     }
-  }, [proposal, loadProposal]);
+  }, [proposal, loadProposal, t]);
 
   const rejectProposal = useCallback(async () => {
     if (!proposal) return;
@@ -140,14 +142,14 @@ export function ProposalReview({ proposalId }: { proposalId: string }) {
         method: "POST",
       });
       if (response.ok) {
-        alert("Proposal rejected");
+        alert(t("proposal.rejectedAlert"));
         loadProposal();
       }
     } catch (error) {
       console.error("Failed to reject proposal:", error);
-      alert("Failed to reject proposal");
+      alert(t("proposal.rejectError"));
     }
-  }, [proposal, loadProposal]);
+  }, [proposal, loadProposal, t]);
 
   const publishProposal = useCallback(async () => {
     if (!proposal) return;
@@ -156,14 +158,14 @@ export function ProposalReview({ proposalId }: { proposalId: string }) {
         method: "POST",
       });
       if (response.ok) {
-        alert("Proposal published");
+        alert(t("proposal.publishedAlert"));
         loadProposal();
       }
     } catch (error) {
       console.error("Failed to publish proposal:", error);
-      alert("Failed to publish proposal");
+      alert(t("proposal.publishError"));
     }
-  }, [proposal, loadProposal]);
+  }, [proposal, loadProposal, t]);
 
   const getChangeIcon = (type: string) => {
     switch (type) {
@@ -286,7 +288,7 @@ export function ProposalReview({ proposalId }: { proposalId: string }) {
   if (!proposal) {
     return (
       <div style={containerStyle}>
-        <div style={{ color: "#8fa8c6", fontSize: "14px" }}>Loading proposal...</div>
+        <div style={{ color: "#8fa8c6", fontSize: "14px" }}>{t("proposal.loading")}</div>
       </div>
     );
   }
@@ -308,18 +310,18 @@ export function ProposalReview({ proposalId }: { proposalId: string }) {
             <>
               <button style={buttonStyle} onClick={approveProposal}>
                 <CheckCircle size={12} />
-                Approve
+                {t("proposal.approve")}
               </button>
               <button style={buttonStyle} onClick={rejectProposal}>
                 <XCircle size={12} />
-                Reject
+                {t("proposal.reject")}
               </button>
             </>
           )}
           {proposal.state === "approved" && (
             <button style={buttonStyle} onClick={publishProposal}>
               <Send size={12} />
-              Publish
+              {t("proposal.publish")}
             </button>
           )}
         </div>
@@ -329,10 +331,10 @@ export function ProposalReview({ proposalId }: { proposalId: string }) {
         <div style={diffPanelStyle}>
           <h2 style={{ margin: "0 0 16px", color: "#ebf3ff", fontSize: "14px", fontWeight: "600" }}>
             <GitMerge size={16} style={{ marginRight: "8px", verticalAlign: "middle" }} />
-            Diff Viewer
+            {t("proposal.diffViewerTitle")}
           </h2>
           {diff.length === 0 ? (
-            <div style={{ color: "#8fa8c6", fontSize: "13px" }}>No changes detected</div>
+            <div style={{ color: "#8fa8c6", fontSize: "13px" }}>{t("proposal.noChanges")}</div>
           ) : (
             diff.map((change, index) => (
               <div
@@ -358,7 +360,7 @@ export function ProposalReview({ proposalId }: { proposalId: string }) {
 
           <div style={{ marginTop: "20px", paddingTop: "16px", borderTop: "1px solid rgba(140, 192, 255, 0.12)" }}>
             <h3 style={{ margin: "0 0 12px", color: "#ebf3ff", fontSize: "13px", fontWeight: "600" }}>
-              Impact Analysis
+              {t("proposal.impactAnalysisTitle")}
             </h3>
             <pre style={{ background: "rgba(3, 9, 18, 0.8)", padding: "12px", borderRadius: "6px", color: "#ebf3ff", fontSize: "12px", overflow: "auto" }}>
               {JSON.stringify(proposal.impact_analysis, null, 2)}
@@ -367,7 +369,7 @@ export function ProposalReview({ proposalId }: { proposalId: string }) {
 
           <div style={{ marginTop: "16px" }}>
             <h3 style={{ margin: "0 0 12px", color: "#ebf3ff", fontSize: "13px", fontWeight: "600" }}>
-              SHACL Validation
+              {t("proposal.shaclValidationTitle")}
             </h3>
             <pre style={{ background: "rgba(3, 9, 18, 0.8)", padding: "12px", borderRadius: "6px", color: "#ebf3ff", fontSize: "12px", overflow: "auto" }}>
               {JSON.stringify(proposal.shacl_validation, null, 2)}
@@ -378,11 +380,11 @@ export function ProposalReview({ proposalId }: { proposalId: string }) {
         <div style={commentsPanelStyle}>
           <h2 style={{ margin: "0 0 16px", color: "#ebf3ff", fontSize: "14px", fontWeight: "600" }}>
             <MessageSquare size={16} style={{ marginRight: "8px", verticalAlign: "middle" }} />
-            Comments ({proposal.comments.length})
+            {t("proposal.commentsTitle", { count: proposal.comments.length })}
           </h2>
           <div style={{ flex: 1, overflow: "auto", marginBottom: "12px" }}>
             {proposal.comments.length === 0 ? (
-              <div style={{ color: "#8fa8c6", fontSize: "13px" }}>No comments yet</div>
+              <div style={{ color: "#8fa8c6", fontSize: "13px" }}>{t("proposal.noComments")}</div>
             ) : (
               proposal.comments.map((comment) => (
                 <div
@@ -411,14 +413,14 @@ export function ProposalReview({ proposalId }: { proposalId: string }) {
           {selectedElement && (
             <div>
               <textarea
-                placeholder="Add a comment..."
+                placeholder={t("proposal.commentPlaceholder")}
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
                 style={textareaStyle}
               />
               <button style={buttonStyle} onClick={addComment} disabled={!commentText}>
                 <Send size={12} />
-                Add Comment
+                {t("proposal.addComment")}
               </button>
             </div>
           )}

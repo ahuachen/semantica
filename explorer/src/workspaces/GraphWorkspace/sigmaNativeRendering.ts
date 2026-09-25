@@ -5,6 +5,7 @@ import type { NodeDisplayData, RenderParams } from "sigma/types";
 import { floatColor } from "sigma/utils";
 import type { NodeHoverDrawingFunction, NodeLabelDrawingFunction } from "sigma/rendering";
 
+import i18n from "../../i18n";
 import { GRAPH_THEME, type GraphEntityShapeVariant, withAlpha } from "./graphTheme";
 
 type SemanticaNodeDrawData = {
@@ -365,7 +366,7 @@ export const drawSemanticaNodeHover: NodeHoverDrawingFunction = (context, rawDat
   const borderColor = resolveAccentBorderColor(data.ringSize, data.ringColor, data.borderColor, hoverTheme.borderColor);
   const metaLabel = (typeof data.nodeType === "string" && data.nodeType.trim().length > 0)
     ? data.nodeType.replaceAll("_", " ").toUpperCase()
-    : "NODE";
+    : i18n.t("graph:hoverCard.nodeFallbackLabel", { defaultValue: "NODE" });
 
   context.save();
   context.textBaseline = "top";

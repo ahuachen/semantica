@@ -5,6 +5,8 @@ import {
   useRef,
   useState,
 } from "react";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import {
   MarkdownClientError,
   applyMarkdownResource,
@@ -40,11 +42,11 @@ function keyOf(resource?: MarkdownResourceRef): string {
   return resource ? `${resource.kind}:${resource.id}` : "";
 }
 
-function normalizeError(failure: unknown): MarkdownEditorError {
+function normalizeError(failure: unknown, t: TFunction<"graph">): MarkdownEditorError {
   if (failure instanceof MarkdownClientError) return failure;
   return {
     kind: "network",
-    message: "The Markdown service could not be reached. Your draft was kept.",
+    message: t("markdownViewer.networkErrorKeptDraft", "The Markdown service could not be reached. Your draft was kept."),
   };
 }
 
@@ -53,6 +55,7 @@ export function useMarkdownEditor({
   onApplied,
   onDirtyChange,
 }: MarkdownEditorOptions) {
+  const { t } = useTranslation("graph");
   const resourceKey = keyOf(resource);
   const [session, setSession] = useState<MarkdownEditSession | null>(null);
   const [viewError, setViewError] = useState<KeyedError | null>(null);
@@ -111,10 +114,10 @@ export function useMarkdownEditor({
     } catch (failure) {
       if (loadGeneration !== loadGenerationRef.current) return false;
       setSession(null);
-      setViewError({ resourceKey, error: normalizeError(failure) });
+      setViewError({ resourceKey, error: normalizeError(failure, t) });
       return false;
     }
-  }, [resource, resourceKey]);
+  }, [resource, resourceKey, t]);
 
   const discard = useCallback(() => {
     if (!activeSession || saving) return;
@@ -139,19 +142,19 @@ export function useMarkdownEditor({
       return true;
     } catch (failure) {
       if (resourceGeneration !== loadGenerationRef.current) return false;
-      setSession(saveFailed(pending, normalizeError(failure)));
+      setSession(saveFailed(pending, normalizeError(failure, t)));
       return false;
     }
-  }, [activeSession, dirty, onApplied, saving]);
+  }, [activeSession, dirty, onApplied, saving, t]);
 
   const reloadLatest = useCallback(async () => {
     if (!resource || saving) return;
     if (
       dirty
-      && !window.confirm("Discard this draft and reload the latest applied version?")
+      && !window.confirm(t("markdownViewer.discardAndReloadConfirm", "Discard this draft and reload the latest applied version?"))
     ) return;
     await beginEdit();
-  }, [beginEdit, dirty, resource, saving]);
+  }, [beginEdit, dirty, resource, saving, t]);
 
   const changeDraft = useCallback((draft: string) => {
     setSession((current) => (

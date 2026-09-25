@@ -70,7 +70,13 @@ test("real Explorer loading path hydrates and renders API edge labels", async (t
     executablePath: process.env.CHROMIUM_PATH || (existsSync("/usr/bin/chromium") ? "/usr/bin/chromium" : undefined),
   });
   t.after(() => browser.close());
-  const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+  // Pin the locale: the UI is localized and picks its language from the
+  // browser, so the English accessible names these selectors rely on are
+  // only guaranteed under an English locale.
+  const page = await browser.newPage({
+    viewport: { width: 1440, height: 1000 },
+    locale: "en-US",
+  });
 
   await page.addInitScript(() => {
     const captured = (window as Window & { __capturedCanvasText?: string[] }).__capturedCanvasText = [];

@@ -1,12 +1,13 @@
 import type { CSSProperties } from "react";
 
+import i18n from "../../../i18n";
 import type { GraphPlugin } from "./types";
 
 const TEMPORAL_PANEL_ID = "temporal-panel";
 
 function formatTemporalLabel(value: Date | null) {
   if (!value) {
-    return "No time selected";
+    return i18n.t("graph:temporal.noTimeSelected", { defaultValue: "No time selected" });
   }
   return `${value.getFullYear()}/${String(value.getMonth() + 1).padStart(2, "0")}`;
 }
@@ -19,8 +20,8 @@ export const temporalOverlayPlugin: GraphPlugin = {
   toolbarItems: (context) => [
     {
       id: "temporal-toggle",
-      label: "Temporal",
-      title: "Toggle temporal context panel",
+      label: i18n.t("graph:temporal.toggleLabel", { defaultValue: "Temporal" }),
+      title: i18n.t("graph:temporal.toggleTitle", { defaultValue: "Toggle temporal context panel" }),
       active: context.isPanelOpen(TEMPORAL_PANEL_ID),
       order: 40,
       onClick: () => context.dispatchAction({ type: "togglePanel", panelId: TEMPORAL_PANEL_ID }),
@@ -58,10 +59,17 @@ export const temporalOverlayPlugin: GraphPlugin = {
             pointerEvents: "none",
           }}
         >
-          <span style={{ color: "#7fc6ff", fontWeight: 700 }}>Temporal</span>
+          <span style={{ color: "#7fc6ff", fontWeight: 700 }}>
+            {i18n.t("graph:temporal.toggleLabel", { defaultValue: "Temporal" })}
+          </span>
           <span>{label}</span>
           {typeof temporal.activeNodeCount === "number" ? (
-            <span style={{ color: "#8ea4be" }}>{temporal.activeNodeCount.toLocaleString()} active</span>
+            <span style={{ color: "#8ea4be" }}>
+              {i18n.t("graph:temporal.activeCount", {
+                count: temporal.activeNodeCount.toLocaleString(),
+                defaultValue: "{{count}} active",
+              })}
+            </span>
           ) : null}
         </div>
       ),
@@ -75,7 +83,7 @@ export const temporalOverlayPlugin: GraphPlugin = {
     const temporal = context.getTemporalState();
     return {
       id: TEMPORAL_PANEL_ID,
-      title: "Temporal Context",
+      title: i18n.t("graph:temporal.panelTitle", { defaultValue: "Temporal Context" }),
       placement: "bottom",
       order: 30,
       defaultOpen: false,
@@ -83,21 +91,27 @@ export const temporalOverlayPlugin: GraphPlugin = {
       preferredHeight: 220,
       content: (
         <div style={panelBodyStyle}>
-          <div style={panelEyebrowStyle}>Current scrubber state</div>
+          <div style={panelEyebrowStyle}>
+            {i18n.t("graph:temporal.scrubberStateEyebrow", { defaultValue: "Current scrubber state" })}
+          </div>
           <div style={detailRowStyle}>
-            <span style={detailLabelStyle}>Current</span>
+            <span style={detailLabelStyle}>{i18n.t("graph:temporal.currentLabel", { defaultValue: "Current" })}</span>
             <span style={detailValueStyle}>{formatTemporalLabel(temporal?.currentTime ?? null)}</span>
           </div>
           <div style={detailRowStyle}>
-            <span style={detailLabelStyle}>Bounds</span>
+            <span style={detailLabelStyle}>{i18n.t("graph:temporal.boundsLabel", { defaultValue: "Bounds" })}</span>
             <span style={detailValueStyle}>
-              {(temporal?.minDate ?? "1970")} → {(temporal?.maxDate ?? "now")}
+              {(temporal?.minDate ?? "1970")} → {(temporal?.maxDate ?? i18n.t("graph:temporal.nowLabel", { defaultValue: "now" }))}
             </span>
           </div>
           <div style={detailRowStyle}>
-            <span style={detailLabelStyle}>Active nodes</span>
+            <span style={detailLabelStyle}>
+              {i18n.t("graph:temporal.activeNodesLabel", { defaultValue: "Active nodes" })}
+            </span>
             <span style={detailValueStyle}>
-              {typeof temporal?.activeNodeCount === "number" ? temporal.activeNodeCount.toLocaleString() : "All"}
+              {typeof temporal?.activeNodeCount === "number"
+                ? temporal.activeNodeCount.toLocaleString()
+                : i18n.t("graph:temporal.allValue", { defaultValue: "All" })}
             </span>
           </div>
         </div>

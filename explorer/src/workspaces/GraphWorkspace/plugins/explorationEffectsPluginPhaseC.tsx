@@ -1,5 +1,7 @@
 import type { CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
 
+import i18n from "../../../i18n";
 import { buildGraphColorLegend } from "../graphColorLegend";
 import type {
   GraphAnalyticsSnapshot,
@@ -17,66 +19,94 @@ type EffectRowConfig = {
   description: string;
 };
 
-const SCENE_EFFECT_ROWS: EffectRowConfig[] = [
-  {
-    key: "pathPulseEnabled",
-    label: "Path Pulse",
-    description: "Animated pulse on the active selected path.",
-  },
-  {
-    key: "pathFlowEnabled",
-    label: "Path Flow",
-    description: "Directional flow accents along the active selected path.",
-  },
-  {
-    key: "lensEnabled",
-    label: "Neighborhood Lens",
-    description: "Local emphasis around the hovered or selected node.",
-  },
-  {
-    key: "temporalEmphasisEnabled",
-    label: "Temporal Emphasis",
-    description: "Subtle glow around temporally relevant nodes in the active time window.",
-  },
-  {
-    key: "semanticRegionsEnabled",
-    label: "Semantic Regions",
-    description: "Quiet semantic hulls around the strongest visible topic clusters.",
-  },
-  {
-    key: "contoursEnabled",
-    label: "Contours",
-    description: "Low-contrast density halos around the strongest visible anchors.",
-  },
-  {
-    key: "edgeLabelsEnabled",
-    label: "Edge Labels",
-    description: "Draw the relationship type on graph edges. Off restores label-free edges on dense graphs.",
-  },
-  {
-    key: "legendEnabled",
-    label: "Regions Summary",
-    description: "Keep the regions and signals summary visible in the Effects panel.",
-  },
-];
+// Built fresh (not module-level) so labels/descriptions reflect the active
+// language on every panel render.
+function buildSceneEffectRows(): EffectRowConfig[] {
+  return [
+    {
+      key: "pathPulseEnabled",
+      label: i18n.t("graph:effects.sceneRows.pathPulse.label", { defaultValue: "Path Pulse" }),
+      description: i18n.t("graph:effects.sceneRows.pathPulse.description", {
+        defaultValue: "Animated pulse on the active selected path.",
+      }),
+    },
+    {
+      key: "pathFlowEnabled",
+      label: i18n.t("graph:effects.sceneRows.pathFlow.label", { defaultValue: "Path Flow" }),
+      description: i18n.t("graph:effects.sceneRows.pathFlow.description", {
+        defaultValue: "Directional flow accents along the active selected path.",
+      }),
+    },
+    {
+      key: "lensEnabled",
+      label: i18n.t("graph:effects.sceneRows.lens.label", { defaultValue: "Neighborhood Lens" }),
+      description: i18n.t("graph:effects.sceneRows.lens.description", {
+        defaultValue: "Local emphasis around the hovered or selected node.",
+      }),
+    },
+    {
+      key: "temporalEmphasisEnabled",
+      label: i18n.t("graph:effects.sceneRows.temporalEmphasis.label", { defaultValue: "Temporal Emphasis" }),
+      description: i18n.t("graph:effects.sceneRows.temporalEmphasis.description", {
+        defaultValue: "Subtle glow around temporally relevant nodes in the active time window.",
+      }),
+    },
+    {
+      key: "semanticRegionsEnabled",
+      label: i18n.t("graph:effects.sceneRows.semanticRegions.label", { defaultValue: "Semantic Regions" }),
+      description: i18n.t("graph:effects.sceneRows.semanticRegions.description", {
+        defaultValue: "Quiet semantic hulls around the strongest visible topic clusters.",
+      }),
+    },
+    {
+      key: "contoursEnabled",
+      label: i18n.t("graph:effects.sceneRows.contours.label", { defaultValue: "Contours" }),
+      description: i18n.t("graph:effects.sceneRows.contours.description", {
+        defaultValue: "Low-contrast density halos around the strongest visible anchors.",
+      }),
+    },
+    {
+      key: "edgeLabelsEnabled",
+      label: i18n.t("graph:effects.sceneRows.edgeLabels.label", { defaultValue: "Edge Labels" }),
+      description: i18n.t("graph:effects.sceneRows.edgeLabels.description", {
+        defaultValue: "Draw the relationship type on graph edges. Off restores label-free edges on dense graphs.",
+      }),
+    },
+    {
+      key: "legendEnabled",
+      label: i18n.t("graph:effects.sceneRows.regionsSummary.label", { defaultValue: "Regions Summary" }),
+      description: i18n.t("graph:effects.sceneRows.regionsSummary.description", {
+        defaultValue: "Keep the regions and signals summary visible in the Effects panel.",
+      }),
+    },
+  ];
+}
 
-const INTELLIGENCE_EFFECT_ROWS: EffectRowConfig[] = [
-  {
-    key: "pathfindingEnabled",
-    label: "Directed Pathfinding",
-    description: "Compare the traced path against a strict local directed shortest path.",
-  },
-  {
-    key: "communitiesEnabled",
-    label: "Community Regions",
-    description: "Detect stable Louvain communities for orientation and scene grouping.",
-  },
-  {
-    key: "centralityEnabled",
-    label: "Centrality Ranking",
-    description: "Rank the strongest graph anchors for labels, regions, and navigation.",
-  },
-];
+function buildIntelligenceEffectRows(): EffectRowConfig[] {
+  return [
+    {
+      key: "pathfindingEnabled",
+      label: i18n.t("graph:effects.intelligenceRows.pathfinding.label", { defaultValue: "Directed Pathfinding" }),
+      description: i18n.t("graph:effects.intelligenceRows.pathfinding.description", {
+        defaultValue: "Compare the traced path against a strict local directed shortest path.",
+      }),
+    },
+    {
+      key: "communitiesEnabled",
+      label: i18n.t("graph:effects.intelligenceRows.communities.label", { defaultValue: "Community Regions" }),
+      description: i18n.t("graph:effects.intelligenceRows.communities.description", {
+        defaultValue: "Detect stable Louvain communities for orientation and scene grouping.",
+      }),
+    },
+    {
+      key: "centralityEnabled",
+      label: i18n.t("graph:effects.intelligenceRows.centrality.label", { defaultValue: "Centrality Ranking" }),
+      description: i18n.t("graph:effects.intelligenceRows.centrality.description", {
+        defaultValue: "Rank the strongest graph anchors for labels, regions, and navigation.",
+      }),
+    },
+  ];
+}
 
 const AVAILABILITY_KEYS: Record<GraphEffectToggle, keyof GraphDiagnosticsSnapshot["effectAvailability"]> = {
   pathPulseEnabled: "pathPulse",
@@ -96,7 +126,12 @@ const AVAILABILITY_KEYS: Record<GraphEffectToggle, keyof GraphDiagnosticsSnapsho
 function renderAvailabilityText(availability: GraphEffectAvailability) {
   if (availability.available) {
     if (typeof availability.visibleSegments === "number" && typeof availability.segmentCap === "number") {
-      return `${availability.reason} - ${availability.visibleSegments}/${availability.segmentCap} segments`;
+      const segmentsLabel = i18n.t("graph:effects.segmentsSuffix", {
+        visible: availability.visibleSegments,
+        cap: availability.segmentCap,
+        defaultValue: "{{visible}}/{{cap}} segments",
+      });
+      return `${availability.reason} - ${segmentsLabel}`;
     }
     return availability.reason;
   }
@@ -118,7 +153,7 @@ function resolveAvailability(
   return availabilityMap?.[AVAILABILITY_KEYS[key]] ?? {
     enabled,
     available: false,
-    reason: "Waiting for graph runtime",
+    reason: i18n.t("graph:effects.waitingForRuntime", { defaultValue: "Waiting for graph runtime" }),
   };
 }
 
@@ -135,6 +170,7 @@ function EffectToggleRow({
   availability: GraphEffectAvailability;
   onToggle: () => void;
 }) {
+  const { t } = useTranslation("graph");
   return (
     <div style={toggleRowStyle}>
       <div style={{ minWidth: 0, flex: 1 }}>
@@ -143,7 +179,7 @@ function EffectToggleRow({
         <div style={rowMetaStyle}>{renderAvailabilityText(availability)}</div>
       </div>
       <button type="button" onClick={onToggle} style={checked ? toggleButtonActiveStyle : toggleButtonStyle}>
-        {checked ? "On" : "Off"}
+        {checked ? t("effects.onLabel", "On") : t("effects.offLabel", "Off")}
       </button>
     </div>
   );
@@ -160,14 +196,22 @@ function renderRegionsAndSignals(
   const directedPath = analytics?.directedPath ?? null;
 
   if (!semanticRegions.length && !communities.length && !centrality.length && !fallbackLegendItems.length && !directedPath) {
-    return <div style={emptyTextStyle}>Regions and intelligence summaries will populate when graph analytics are ready.</div>;
+    return (
+      <div style={emptyTextStyle}>
+        {i18n.t("graph:effects.regionsSignalsEmptyState", {
+          defaultValue: "Regions and intelligence summaries will populate when graph analytics are ready.",
+        })}
+      </div>
+    );
   }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       {semanticRegions.length ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <div style={subsectionTitleStyle}>Semantic regions</div>
+          <div style={subsectionTitleStyle}>
+            {i18n.t("graph:effects.semanticRegionsSubsection", { defaultValue: "Semantic regions" })}
+          </div>
           {semanticRegions.map((region) => (
             <div key={region.semanticGroup} style={legendRowStyle}>
               <span
@@ -180,7 +224,11 @@ function renderRegionsAndSignals(
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={rowTitleStyle}>{region.semanticGroup}</div>
                 <div style={rowMetaStyle}>
-                  {region.visibleNodeCount.toLocaleString()} visible / {region.nodeCount.toLocaleString()} total
+                  {i18n.t("graph:effects.visibleOfTotal", {
+                    visible: region.visibleNodeCount.toLocaleString(),
+                    total: region.nodeCount.toLocaleString(),
+                    defaultValue: "{{visible}} visible / {{total}} total",
+                  })}
                 </div>
               </div>
               <div style={signalBadgeStyle}>{region.anchorLabel}</div>
@@ -191,13 +239,20 @@ function renderRegionsAndSignals(
 
       {communities.length ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <div style={subsectionTitleStyle}>Community anchors</div>
+          <div style={subsectionTitleStyle}>
+            {i18n.t("graph:effects.communityAnchorsSubsection", { defaultValue: "Community anchors" })}
+          </div>
           {communities.slice(0, 3).map((community) => (
             <div key={community.communityId} style={signalRowStyle}>
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={rowTitleStyle}>{community.anchorLabel}</div>
                 <div style={rowMetaStyle}>
-                  Community {community.communityId} - {community.visibleNodeCount} visible / {community.nodeCount} total
+                  {i18n.t("graph:effects.communitySummary", {
+                    communityId: community.communityId,
+                    visible: community.visibleNodeCount,
+                    total: community.nodeCount,
+                    defaultValue: "Community {{communityId}} - {{visible}} visible / {{total}} total",
+                  })}
                 </div>
               </div>
               <div style={signalBadgeStyle}>{community.dominantSemanticGroup}</div>
@@ -208,16 +263,24 @@ function renderRegionsAndSignals(
 
       {centrality.length ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <div style={subsectionTitleStyle}>Centrality leaders</div>
+          <div style={subsectionTitleStyle}>
+            {i18n.t("graph:effects.centralityLeadersSubsection", { defaultValue: "Centrality leaders" })}
+          </div>
           {centrality.slice(0, 3).map((node) => (
             <div key={node.id} style={signalRowStyle}>
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={rowTitleStyle}>{node.label}</div>
                 <div style={rowMetaStyle}>
-                  {node.semanticGroup} - score {node.score.toFixed(3)}
+                  {i18n.t("graph:effects.centralityScoreSummary", {
+                    semanticGroup: node.semanticGroup,
+                    score: node.score.toFixed(3),
+                    defaultValue: "{{semanticGroup}} - score {{score}}",
+                  })}
                 </div>
               </div>
-              <div style={signalBadgeStyle}>deg {node.degree.toFixed(3)}</div>
+              <div style={signalBadgeStyle}>
+                {i18n.t("graph:effects.degreeBadge", { value: node.degree.toFixed(3), defaultValue: "deg {{value}}" })}
+              </div>
             </div>
           ))}
         </div>
@@ -225,15 +288,27 @@ function renderRegionsAndSignals(
 
       {directedPath ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <div style={subsectionTitleStyle}>Directed pathfinding</div>
+          <div style={subsectionTitleStyle}>
+            {i18n.t("graph:effects.directedPathfindingSubsection", { defaultValue: "Directed pathfinding" })}
+          </div>
           <div style={signalRowStyle}>
             <div style={{ minWidth: 0, flex: 1 }}>
-              <div style={rowTitleStyle}>{directedPath.ready ? "Local directed path ready" : "Waiting for path context"}</div>
+              <div style={rowTitleStyle}>
+                {directedPath.ready
+                  ? i18n.t("graph:effects.localDirectedPathReady", { defaultValue: "Local directed path ready" })
+                  : i18n.t("graph:effects.waitingForPathContext", { defaultValue: "Waiting for path context" })}
+              </div>
               <div style={rowMetaStyle}>{directedPath.reason}</div>
             </div>
             {directedPath.ready ? (
               <div style={signalBadgeStyle}>
-                {directedPath.length} hops{directedPath.verifiedAgainstActivePath ? " - match" : ""}
+                {i18n.t("graph:effects.directedPathHops", {
+                  count: directedPath.length,
+                  matchSuffix: directedPath.verifiedAgainstActivePath
+                    ? i18n.t("graph:effects.directedPathMatchSuffix", { defaultValue: " - match" })
+                    : "",
+                  defaultValue: "{{count}} hops{{matchSuffix}}",
+                })}
               </div>
             ) : null}
           </div>
@@ -242,7 +317,9 @@ function renderRegionsAndSignals(
 
       {!semanticRegions.length && !communities.length && !centrality.length && fallbackLegendItems.length ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <div style={subsectionTitleStyle}>Fallback semantic legend</div>
+          <div style={subsectionTitleStyle}>
+            {i18n.t("graph:effects.fallbackLegendSubsection", { defaultValue: "Fallback semantic legend" })}
+          </div>
           {fallbackLegendItems.map((item) => (
             <div key={item.id} style={legendRowStyle}>
               <span
@@ -254,7 +331,9 @@ function renderRegionsAndSignals(
               />
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={rowTitleStyle}>{item.group}</div>
-                <div style={rowMetaStyle}>{item.count.toLocaleString()} nodes</div>
+                <div style={rowMetaStyle}>
+                  {i18n.t("graph:legend.nodeCount", { count: item.count.toLocaleString(), defaultValue: "{{count}} nodes" })}
+                </div>
               </div>
             </div>
           ))}
@@ -272,8 +351,8 @@ export const explorationEffectsPluginPhaseC: GraphPlugin = {
   toolbarItems: (context) => [
     {
       id: "effects-toggle",
-      label: "Effects",
-      title: "Open exploration effects controls",
+      label: i18n.t("graph:effects.toggleLabel", { defaultValue: "Effects" }),
+      title: i18n.t("graph:effects.toggleTitle", { defaultValue: "Open exploration effects controls" }),
       active: context.isPanelOpen(EFFECTS_PANEL_ID),
       order: 18,
       onClick: () => context.dispatchAction({ type: "togglePanel", panelId: EFFECTS_PANEL_ID }),
@@ -295,9 +374,12 @@ export const explorationEffectsPluginPhaseC: GraphPlugin = {
       || effectsState.centralityEnabled
       || effectsState.pathfindingEnabled;
 
+    const sceneEffectRows = buildSceneEffectRows();
+    const intelligenceEffectRows = buildIntelligenceEffectRows();
+
     return {
       id: EFFECTS_PANEL_ID,
-      title: "Effects",
+      title: i18n.t("graph:effects.toggleLabel", { defaultValue: "Effects" }),
       placement: "bottom",
       order: 8,
       defaultOpen: false,
@@ -305,11 +387,15 @@ export const explorationEffectsPluginPhaseC: GraphPlugin = {
       preferredHeight: 360,
       content: (
         <div style={panelBodyStyle}>
-          <div style={panelEyebrowStyle}>Exploration effects</div>
+          <div style={panelEyebrowStyle}>
+            {i18n.t("graph:effects.eyebrow", { defaultValue: "Exploration effects" })}
+          </div>
 
           <div style={sectionStyle}>
-            <div style={sectionTitleStyle}>Scene effects</div>
-            {SCENE_EFFECT_ROWS.map((row) => (
+            <div style={sectionTitleStyle}>
+              {i18n.t("graph:effects.sceneEffectsSection", { defaultValue: "Scene effects" })}
+            </div>
+            {sceneEffectRows.map((row) => (
               <EffectToggleRow
                 key={row.key}
                 label={row.label}
@@ -322,8 +408,10 @@ export const explorationEffectsPluginPhaseC: GraphPlugin = {
           </div>
 
           <div style={sectionStyle}>
-            <div style={sectionTitleStyle}>Graph intelligence</div>
-            {INTELLIGENCE_EFFECT_ROWS.map((row) => (
+            <div style={sectionTitleStyle}>
+              {i18n.t("graph:effects.graphIntelligenceSection", { defaultValue: "Graph intelligence" })}
+            </div>
+            {intelligenceEffectRows.map((row) => (
               <EffectToggleRow
                 key={row.key}
                 label={row.label}
@@ -337,24 +425,32 @@ export const explorationEffectsPluginPhaseC: GraphPlugin = {
 
           {showSignalsSection ? (
             <div style={sectionStyle}>
-              <div style={sectionTitleStyle}>Regions and signals</div>
+              <div style={sectionTitleStyle}>
+                {i18n.t("graph:effects.regionsAndSignalsSection", { defaultValue: "Regions and signals" })}
+              </div>
               {renderRegionsAndSignals(context, analyticsSnapshot)}
             </div>
           ) : null}
 
           {import.meta.env.DEV ? (
             <div style={sectionStyle}>
-              <div style={sectionTitleStyle}>Diagnostics</div>
+              <div style={sectionTitleStyle}>
+                {i18n.t("graph:effects.diagnosticsSection", { defaultValue: "Diagnostics" })}
+              </div>
               <EffectToggleRow
-                label="Dev Diagnostics"
-                description="Inspect plugin, interaction, and effect gating state."
+                label={i18n.t("graph:effects.devDiagnosticsLabel", { defaultValue: "Dev Diagnostics" })}
+                description={i18n.t("graph:effects.devDiagnosticsDescription", {
+                  defaultValue: "Inspect plugin, interaction, and effect gating state.",
+                })}
                 checked={effectsState.diagnosticsEnabled}
                 availability={resolveAvailability(availability, "diagnosticsEnabled", effectsState.diagnosticsEnabled)}
                 onToggle={() => context.dispatchAction({ type: "toggleEffect", effect: "diagnosticsEnabled" })}
               />
               {effectsState.diagnosticsEnabled && diagnosticsSnapshot ? (
                 <details style={detailsStyle}>
-                  <summary style={summaryStyle}>Runtime snapshot</summary>
+                  <summary style={summaryStyle}>
+                    {i18n.t("graph:effects.runtimeSnapshot", { defaultValue: "Runtime snapshot" })}
+                  </summary>
                   <pre style={diagnosticsPreStyle}>
                     {JSON.stringify({ diagnostics: diagnosticsSnapshot, analytics: analyticsSnapshot }, null, 2)}
                   </pre>

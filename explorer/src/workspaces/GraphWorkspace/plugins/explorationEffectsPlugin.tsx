@@ -1,5 +1,7 @@
 import type { CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
 
+import i18n from "../../../i18n";
 import type {
   GraphDiagnosticsSnapshot,
   GraphEffectAvailability,
@@ -15,33 +17,47 @@ type EffectRowConfig = {
   description: string;
 };
 
-const EFFECT_ROWS: EffectRowConfig[] = [
-  {
-    key: "pathPulseEnabled",
-    label: "Path Pulse",
-    description: "Animated pulse on the active selected path.",
-  },
-  {
-    key: "pathFlowEnabled",
-    label: "Path Flow",
-    description: "Directional flow accents along the active selected path.",
-  },
-  {
-    key: "lensEnabled",
-    label: "Neighborhood Lens",
-    description: "Local emphasis around the hovered or selected node.",
-  },
-  {
-    key: "edgeLabelsEnabled",
-    label: "Edge Labels",
-    description: "Draw the relationship type on graph edges. Off restores label-free edges on dense graphs.",
-  },
-  {
-    key: "legendEnabled",
-    label: "Semantic Legend",
-    description: "Compact semantic group legend for graph orientation.",
-  },
-];
+// Built fresh (not module-level) so labels/descriptions reflect the active
+// language on every panel render.
+function buildEffectRows(): EffectRowConfig[] {
+  return [
+    {
+      key: "pathPulseEnabled",
+      label: i18n.t("graph:effects.rows.pathPulse.label", { defaultValue: "Path Pulse" }),
+      description: i18n.t("graph:effects.rows.pathPulse.description", {
+        defaultValue: "Animated pulse on the active selected path.",
+      }),
+    },
+    {
+      key: "pathFlowEnabled",
+      label: i18n.t("graph:effects.rows.pathFlow.label", { defaultValue: "Path Flow" }),
+      description: i18n.t("graph:effects.rows.pathFlow.description", {
+        defaultValue: "Directional flow accents along the active selected path.",
+      }),
+    },
+    {
+      key: "lensEnabled",
+      label: i18n.t("graph:effects.rows.lens.label", { defaultValue: "Neighborhood Lens" }),
+      description: i18n.t("graph:effects.rows.lens.description", {
+        defaultValue: "Local emphasis around the hovered or selected node.",
+      }),
+    },
+    {
+      key: "edgeLabelsEnabled",
+      label: i18n.t("graph:effects.rows.edgeLabels.label", { defaultValue: "Edge Labels" }),
+      description: i18n.t("graph:effects.rows.edgeLabels.description", {
+        defaultValue: "Draw the relationship type on graph edges. Off restores label-free edges on dense graphs.",
+      }),
+    },
+    {
+      key: "legendEnabled",
+      label: i18n.t("graph:effects.rows.legend.label", { defaultValue: "Semantic Legend" }),
+      description: i18n.t("graph:effects.rows.legend.description", {
+        defaultValue: "Compact semantic group legend for graph orientation.",
+      }),
+    },
+  ];
+}
 
 // Maps the effect toggle keys rendered by this plugin to their corresponding
 // availability keys in GraphDiagnosticsSnapshot["effectAvailability"]. Kept
@@ -57,7 +73,12 @@ const EFFECT_AVAILABILITY_KEYS: Partial<Record<GraphEffectToggle, keyof GraphDia
 function renderAvailabilityText(availability: GraphEffectAvailability) {
   if (availability.available) {
     if (typeof availability.visibleSegments === "number" && typeof availability.segmentCap === "number") {
-      return `${availability.reason} · ${availability.visibleSegments}/${availability.segmentCap} segments`;
+      const segmentsLabel = i18n.t("graph:effects.segmentsSuffix", {
+        visible: availability.visibleSegments,
+        cap: availability.segmentCap,
+        defaultValue: "{{visible}}/{{cap}} segments",
+      });
+      return `${availability.reason} · ${segmentsLabel}`;
     }
     return availability.reason;
   }
@@ -96,6 +117,7 @@ function EffectToggleRow({
   availability: GraphEffectAvailability;
   onToggle: () => void;
 }) {
+  const { t } = useTranslation("graph");
   return (
     <div style={toggleRowStyle}>
       <div style={{ minWidth: 0, flex: 1 }}>
@@ -104,7 +126,7 @@ function EffectToggleRow({
         <div style={rowMetaStyle}>{renderAvailabilityText(availability)}</div>
       </div>
       <button type="button" onClick={onToggle} style={checked ? toggleButtonActiveStyle : toggleButtonStyle}>
-        {checked ? "On" : "Off"}
+        {checked ? t("effects.onLabel", "On") : t("effects.offLabel", "Off")}
       </button>
     </div>
   );
@@ -118,8 +140,8 @@ export const explorationEffectsPlugin: GraphPlugin = {
   toolbarItems: (context) => [
     {
       id: "effects-toggle",
-      label: "Effects",
-      title: "Open exploration effects controls",
+      label: i18n.t("graph:effects.toggleLabel", { defaultValue: "Effects" }),
+      title: i18n.t("graph:effects.toggleTitle", { defaultValue: "Open exploration effects controls" }),
       active: context.isPanelOpen(EFFECTS_PANEL_ID),
       order: 18,
       onClick: () => context.dispatchAction({ type: "togglePanel", panelId: EFFECTS_PANEL_ID }),
@@ -134,10 +156,11 @@ export const explorationEffectsPlugin: GraphPlugin = {
     const diagnosticsSnapshot = context.getDiagnosticsSnapshot();
     const availability = diagnosticsSnapshot?.effectAvailability;
     const legendItems = effectsState.legendEnabled ? collectLegendItems(context) : [];
+    const effectRows = buildEffectRows();
 
     return {
       id: EFFECTS_PANEL_ID,
-      title: "Effects",
+      title: i18n.t("graph:effects.toggleLabel", { defaultValue: "Effects" }),
       placement: "bottom",
       order: 8,
       defaultOpen: false,
@@ -145,11 +168,15 @@ export const explorationEffectsPlugin: GraphPlugin = {
       preferredHeight: 320,
       content: (
         <div style={panelBodyStyle}>
-          <div style={panelEyebrowStyle}>Exploration effects</div>
+          <div style={panelEyebrowStyle}>
+            {i18n.t("graph:effects.eyebrow", { defaultValue: "Exploration effects" })}
+          </div>
 
           <div style={sectionStyle}>
-            <div style={sectionTitleStyle}>Path and focus</div>
-            {EFFECT_ROWS.map((row) => (
+            <div style={sectionTitleStyle}>
+              {i18n.t("graph:effects.pathAndFocusSection", { defaultValue: "Path and focus" })}
+            </div>
+            {effectRows.map((row) => (
               <EffectToggleRow
                 key={row.key}
                 label={row.label}
@@ -161,7 +188,7 @@ export const explorationEffectsPlugin: GraphPlugin = {
                     : undefined) ?? {
                     enabled: effectsState[row.key],
                     available: false,
-                    reason: "Waiting for graph runtime",
+                    reason: i18n.t("graph:effects.waitingForRuntime", { defaultValue: "Waiting for graph runtime" }),
                   }
                 }
                 onToggle={() => context.dispatchAction({ type: "toggleEffect", effect: row.key })}
@@ -171,7 +198,9 @@ export const explorationEffectsPlugin: GraphPlugin = {
 
           {effectsState.legendEnabled ? (
             <div style={sectionStyle}>
-              <div style={sectionTitleStyle}>Semantic legend</div>
+              <div style={sectionTitleStyle}>
+                {i18n.t("graph:effects.semanticLegendSection", { defaultValue: "Semantic legend" })}
+              </div>
               {legendItems.length ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {legendItems.map((item) => (
@@ -185,36 +214,51 @@ export const explorationEffectsPlugin: GraphPlugin = {
                       />
                       <div style={{ minWidth: 0, flex: 1 }}>
                         <div style={rowTitleStyle}>{item.group}</div>
-                        <div style={rowMetaStyle}>{item.count.toLocaleString()} nodes</div>
+                        <div style={rowMetaStyle}>
+                          {i18n.t("graph:legend.nodeCount", {
+                            count: item.count.toLocaleString(),
+                            defaultValue: "{{count}} nodes",
+                          })}
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div style={emptyTextStyle}>Legend data will populate when graph metadata is available.</div>
+                <div style={emptyTextStyle}>
+                  {i18n.t("graph:effects.legendEmptyState", {
+                    defaultValue: "Legend data will populate when graph metadata is available.",
+                  })}
+                </div>
               )}
             </div>
           ) : null}
 
           {import.meta.env.DEV ? (
             <div style={sectionStyle}>
-              <div style={sectionTitleStyle}>Diagnostics</div>
+              <div style={sectionTitleStyle}>
+                {i18n.t("graph:effects.diagnosticsSection", { defaultValue: "Diagnostics" })}
+              </div>
               <EffectToggleRow
-                label="Dev Diagnostics"
-                description="Inspect plugin, interaction, and effect gating state."
+                label={i18n.t("graph:effects.devDiagnosticsLabel", { defaultValue: "Dev Diagnostics" })}
+                description={i18n.t("graph:effects.devDiagnosticsDescription", {
+                  defaultValue: "Inspect plugin, interaction, and effect gating state.",
+                })}
                 checked={effectsState.diagnosticsEnabled}
                 availability={
                   availability?.diagnostics ?? {
                     enabled: effectsState.diagnosticsEnabled,
                     available: false,
-                    reason: "Waiting for graph runtime",
+                    reason: i18n.t("graph:effects.waitingForRuntime", { defaultValue: "Waiting for graph runtime" }),
                   }
                 }
                 onToggle={() => context.dispatchAction({ type: "toggleEffect", effect: "diagnosticsEnabled" })}
               />
               {effectsState.diagnosticsEnabled && diagnosticsSnapshot ? (
                 <details style={detailsStyle}>
-                  <summary style={summaryStyle}>Runtime snapshot</summary>
+                  <summary style={summaryStyle}>
+                    {i18n.t("graph:effects.runtimeSnapshot", { defaultValue: "Runtime snapshot" })}
+                  </summary>
                   <pre style={diagnosticsPreStyle}>
                     {JSON.stringify(diagnosticsSnapshot, null, 2)}
                   </pre>

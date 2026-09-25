@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useCallback, forwardRef, useImperativeHandl
 import Sigma from "sigma";
 import FA2Layout from "graphology-layout-forceatlas2/worker";
 import { graph, type EdgeAttributes, type NodeAttributes } from "../../store/graphStore";
+import i18n from "../../i18n";
 import type { GraphBehavior, GraphBehaviorContext, GraphBehaviorActionRequest } from "./behaviors/types";
 import { hoverActivationBehavior } from "./behaviors/hoverActivationBehavior";
 import { clickSelectionBehavior } from "./behaviors/clickSelectionBehavior";
@@ -565,197 +566,200 @@ function buildEffectAvailability(
   const regionsTierReady = zoomTierAtLeast(interactionState.zoomTier, GRAPH_THEME.effects.semanticRegions.minZoomTier);
   const contoursTierReady = zoomTierAtLeast(interactionState.zoomTier, GRAPH_THEME.effects.contours.minZoomTier);
   const hasPrimaryNode = Boolean(interactionState.hoveredNodeId || interactionState.selectedNodeId);
-  const layoutReason = "Layout is still settling";
+  const layoutReason = i18n.t("graph:effectAvailability.layoutSettling", { defaultValue: "Layout is still settling" });
 
   const pathPulse = !effectsState.pathPulseEnabled
-    ? { enabled: false, available: false, reason: "Disabled by toggle" }
+    ? { enabled: false, available: false, reason: i18n.t("graph:effectAvailability.disabledByToggle", { defaultValue: "Disabled by toggle" }) }
     : isLayoutRunning
       ? { enabled: true, available: false, reason: layoutReason }
     : !hasActivePath
-      ? { enabled: true, available: false, reason: "No active path" }
+      ? { enabled: true, available: false, reason: i18n.t("graph:effectAvailability.noActivePath", { defaultValue: "No active path" }) }
       : !pulseTierReady
         ? {
             enabled: true,
             available: false,
-            reason: "Disabled by zoom tier",
-            detail: `Requires ${GRAPH_THEME.effects.pathPulse.minZoomTier}`,
+            reason: i18n.t("graph:effectAvailability.disabledByZoomTier", { defaultValue: "Disabled by zoom tier" }),
+            detail: i18n.t("graph:effectAvailability.requiresZoomTier", { tier: GRAPH_THEME.effects.pathPulse.minZoomTier, defaultValue: "Requires {{tier}}" }),
           }
         : visiblePathSegments === 0
-          ? { enabled: true, available: false, reason: "Path is off-screen" }
+          ? { enabled: true, available: false, reason: i18n.t("graph:effectAvailability.pathOffScreen", { defaultValue: "Path is off-screen" }) }
           : visiblePathSegments > GRAPH_THEME.effects.pathPulse.maxSegments
             ? {
                 enabled: true,
                 available: false,
-                reason: "Disabled by path size cap",
-                detail: `${visiblePathSegments} visible segments`,
+                reason: i18n.t("graph:effectAvailability.disabledByPathSizeCap", { defaultValue: "Disabled by path size cap" }),
+                detail: i18n.t("graph:effectAvailability.visibleSegmentsDetail", { count: visiblePathSegments, defaultValue: "{{count}} visible segments" }),
                 visibleSegments: visiblePathSegments,
                 segmentCap: GRAPH_THEME.effects.pathPulse.maxSegments,
               }
             : {
                 enabled: true,
                 available: true,
-                reason: "Ready",
+                reason: i18n.t("graph:effectAvailability.ready", { defaultValue: "Ready" }),
                 visibleSegments: visiblePathSegments,
                 segmentCap: GRAPH_THEME.effects.pathPulse.maxSegments,
               };
 
   const pathFlow = !effectsState.pathFlowEnabled
-    ? { enabled: false, available: false, reason: "Disabled by toggle" }
+    ? { enabled: false, available: false, reason: i18n.t("graph:effectAvailability.disabledByToggle", { defaultValue: "Disabled by toggle" }) }
     : isLayoutRunning
       ? { enabled: true, available: false, reason: layoutReason }
     : !hasActivePath
-      ? { enabled: true, available: false, reason: "No active path" }
+      ? { enabled: true, available: false, reason: i18n.t("graph:effectAvailability.noActivePath", { defaultValue: "No active path" }) }
       : !flowTierReady
         ? {
             enabled: true,
             available: false,
-            reason: "Disabled by zoom tier",
-            detail: `Requires ${GRAPH_THEME.effects.pathFlow.minZoomTier}`,
+            reason: i18n.t("graph:effectAvailability.disabledByZoomTier", { defaultValue: "Disabled by zoom tier" }),
+            detail: i18n.t("graph:effectAvailability.requiresZoomTier", { tier: GRAPH_THEME.effects.pathFlow.minZoomTier, defaultValue: "Requires {{tier}}" }),
           }
         : visiblePathSegments === 0
-          ? { enabled: true, available: false, reason: "Path is off-screen" }
+          ? { enabled: true, available: false, reason: i18n.t("graph:effectAvailability.pathOffScreen", { defaultValue: "Path is off-screen" }) }
           : visiblePathSegments > GRAPH_THEME.effects.pathFlow.maxSegments
             ? {
                 enabled: true,
                 available: false,
-                reason: "Disabled by path size cap",
-                detail: `${visiblePathSegments} visible segments`,
+                reason: i18n.t("graph:effectAvailability.disabledByPathSizeCap", { defaultValue: "Disabled by path size cap" }),
+                detail: i18n.t("graph:effectAvailability.visibleSegmentsDetail", { count: visiblePathSegments, defaultValue: "{{count}} visible segments" }),
                 visibleSegments: visiblePathSegments,
                 segmentCap: GRAPH_THEME.effects.pathFlow.maxSegments,
               }
             : {
                 enabled: true,
                 available: true,
-                reason: "Ready",
+                reason: i18n.t("graph:effectAvailability.ready", { defaultValue: "Ready" }),
                 visibleSegments: visiblePathSegments,
                 segmentCap: GRAPH_THEME.effects.pathFlow.maxSegments,
               };
 
   const lens = !effectsState.lensEnabled
-    ? { enabled: false, available: false, reason: "Disabled by toggle" }
+    ? { enabled: false, available: false, reason: i18n.t("graph:effectAvailability.disabledByToggle", { defaultValue: "Disabled by toggle" }) }
     : isLayoutRunning
       ? { enabled: true, available: false, reason: layoutReason }
     : !hasPrimaryNode
-      ? { enabled: true, available: false, reason: "No focal node" }
+      ? { enabled: true, available: false, reason: i18n.t("graph:effectAvailability.noFocalNode", { defaultValue: "No focal node" }) }
       : !lensTierReady
         ? {
             enabled: true,
             available: false,
-            reason: "Disabled by zoom tier",
-            detail: `Requires ${GRAPH_THEME.effects.lens.minZoomTier}`,
+            reason: i18n.t("graph:effectAvailability.disabledByZoomTier", { defaultValue: "Disabled by zoom tier" }),
+            detail: i18n.t("graph:effectAvailability.requiresZoomTier", { tier: GRAPH_THEME.effects.lens.minZoomTier, defaultValue: "Requires {{tier}}" }),
           }
-        : { enabled: true, available: true, reason: "Ready" };
+        : { enabled: true, available: true, reason: i18n.t("graph:effectAvailability.ready", { defaultValue: "Ready" }) };
 
   const temporalEmphasis = !effectsState.temporalEmphasisEnabled
-    ? { enabled: false, available: false, reason: "Disabled by toggle" }
+    ? { enabled: false, available: false, reason: i18n.t("graph:effectAvailability.disabledByToggle", { defaultValue: "Disabled by toggle" }) }
     : isLayoutRunning
       ? { enabled: true, available: false, reason: layoutReason }
     : !temporalState?.currentTime
-      ? { enabled: true, available: false, reason: "No temporal focus time" }
+      ? { enabled: true, available: false, reason: i18n.t("graph:effectAvailability.noTemporalFocusTime", { defaultValue: "No temporal focus time" }) }
       : !temporalTierReady
         ? {
             enabled: true,
             available: false,
-            reason: "Disabled by zoom tier",
-            detail: `Requires ${GRAPH_THEME.effects.temporalEmphasis.minZoomTier}`,
+            reason: i18n.t("graph:effectAvailability.disabledByZoomTier", { defaultValue: "Disabled by zoom tier" }),
+            detail: i18n.t("graph:effectAvailability.requiresZoomTier", { tier: GRAPH_THEME.effects.temporalEmphasis.minZoomTier, defaultValue: "Requires {{tier}}" }),
           }
-        : { enabled: true, available: true, reason: "Ready" };
+        : { enabled: true, available: true, reason: i18n.t("graph:effectAvailability.ready", { defaultValue: "Ready" }) };
 
   const semanticRegions = !effectsState.semanticRegionsEnabled
-    ? { enabled: false, available: false, reason: "Disabled by toggle" }
+    ? { enabled: false, available: false, reason: i18n.t("graph:effectAvailability.disabledByToggle", { defaultValue: "Disabled by toggle" }) }
     : isLayoutRunning
       ? { enabled: true, available: false, reason: layoutReason }
     : !regionsTierReady
       ? {
           enabled: true,
           available: false,
-          reason: "Disabled by zoom tier",
-          detail: `Requires ${GRAPH_THEME.effects.semanticRegions.minZoomTier}`,
+          reason: i18n.t("graph:effectAvailability.disabledByZoomTier", { defaultValue: "Disabled by zoom tier" }),
+          detail: i18n.t("graph:effectAvailability.requiresZoomTier", { tier: GRAPH_THEME.effects.semanticRegions.minZoomTier, defaultValue: "Requires {{tier}}" }),
         }
       : !analytics?.semanticRegions.ready
         ? {
             enabled: true,
             available: false,
-            reason: analytics?.semanticRegions.reason ?? "Waiting for semantic region summaries",
+            reason: analytics?.semanticRegions.reason ?? i18n.t("graph:effectAvailability.waitingForSemanticRegions", { defaultValue: "Waiting for semantic region summaries" }),
           }
         : { enabled: true, available: true, reason: analytics.semanticRegions.reason };
 
   const contours = !effectsState.contoursEnabled
-    ? { enabled: false, available: false, reason: "Disabled by toggle" }
+    ? { enabled: false, available: false, reason: i18n.t("graph:effectAvailability.disabledByToggle", { defaultValue: "Disabled by toggle" }) }
     : isLayoutRunning
       ? { enabled: true, available: false, reason: layoutReason }
     : !contoursTierReady
       ? {
           enabled: true,
           available: false,
-          reason: "Disabled by zoom tier",
-          detail: `Requires ${GRAPH_THEME.effects.contours.minZoomTier}`,
+          reason: i18n.t("graph:effectAvailability.disabledByZoomTier", { defaultValue: "Disabled by zoom tier" }),
+          detail: i18n.t("graph:effectAvailability.requiresZoomTier", { tier: GRAPH_THEME.effects.contours.minZoomTier, defaultValue: "Requires {{tier}}" }),
         }
       : !analytics?.centrality.ready
         ? {
             enabled: true,
             available: false,
-            reason: analytics?.centrality.reason ?? "Waiting for centrality ranking",
+            reason: analytics?.centrality.reason ?? i18n.t("graph:effectAvailability.waitingForCentrality", { defaultValue: "Waiting for centrality ranking" }),
           }
         : { enabled: true, available: true, reason: analytics.centrality.reason };
 
   const pathfinding = !effectsState.pathfindingEnabled
-    ? { enabled: false, available: false, reason: "Disabled by toggle" }
+    ? { enabled: false, available: false, reason: i18n.t("graph:effectAvailability.disabledByToggle", { defaultValue: "Disabled by toggle" }) }
     : !analytics?.directedPath.ready
       ? {
           enabled: true,
           available: false,
-          reason: analytics?.directedPath.reason ?? "Waiting for a traced path",
+          reason: analytics?.directedPath.reason ?? i18n.t("graph:effectAvailability.waitingForTracedPath", { defaultValue: "Waiting for a traced path" }),
         }
       : {
           enabled: true,
           available: true,
           reason: analytics.directedPath.verifiedAgainstActivePath
-            ? "Ready · local path matches traced path"
-            : "Ready · local directed path differs from traced path",
+            ? i18n.t("graph:effectAvailability.readyPathMatches", { defaultValue: "Ready · local path matches traced path" })
+            : i18n.t("graph:effectAvailability.readyPathDiffers", { defaultValue: "Ready · local directed path differs from traced path" }),
         };
 
   const communities = !effectsState.communitiesEnabled
-    ? { enabled: false, available: false, reason: "Disabled by toggle" }
+    ? { enabled: false, available: false, reason: i18n.t("graph:effectAvailability.disabledByToggle", { defaultValue: "Disabled by toggle" }) }
     : !analytics?.communities.ready
       ? {
           enabled: true,
           available: false,
-          reason: analytics?.communities.reason ?? "Waiting for community summaries",
+          reason: analytics?.communities.reason ?? i18n.t("graph:effectAvailability.waitingForCommunities", { defaultValue: "Waiting for community summaries" }),
         }
       : {
           enabled: true,
           available: true,
           reason: analytics.communities.modularity !== null
-            ? `Ready · modularity ${analytics.communities.modularity.toFixed(3)}`
+            ? i18n.t("graph:effectAvailability.readyModularity", {
+                value: analytics.communities.modularity.toFixed(3),
+                defaultValue: "Ready · modularity {{value}}",
+              })
             : analytics.communities.reason,
         };
 
   const centrality = !effectsState.centralityEnabled
-    ? { enabled: false, available: false, reason: "Disabled by toggle" }
+    ? { enabled: false, available: false, reason: i18n.t("graph:effectAvailability.disabledByToggle", { defaultValue: "Disabled by toggle" }) }
     : !analytics?.centrality.ready
       ? {
           enabled: true,
           available: false,
-          reason: analytics?.centrality.reason ?? "Waiting for centrality ranking",
+          reason: analytics?.centrality.reason ?? i18n.t("graph:effectAvailability.waitingForCentrality", { defaultValue: "Waiting for centrality ranking" }),
         }
       : { enabled: true, available: true, reason: analytics.centrality.reason };
 
   const legend = effectsState.legendEnabled
-    ? { enabled: true, available: true, reason: "Panel enabled" }
-    : { enabled: false, available: false, reason: "Disabled by toggle" };
+    ? { enabled: true, available: true, reason: i18n.t("graph:effectAvailability.panelEnabled", { defaultValue: "Panel enabled" }) }
+    : { enabled: false, available: false, reason: i18n.t("graph:effectAvailability.disabledByToggle", { defaultValue: "Disabled by toggle" }) };
 
   // #1009: edge labels are immediately available once the graph is loaded —
   // they have no async analytics or zoom-tier dependency.
   const edgeLabels = effectsState.edgeLabelsEnabled
-    ? { enabled: true, available: true, reason: "Ready" }
-    : { enabled: false, available: false, reason: "Disabled by toggle" };
+    ? { enabled: true, available: true, reason: i18n.t("graph:effectAvailability.ready", { defaultValue: "Ready" }) }
+    : { enabled: false, available: false, reason: i18n.t("graph:effectAvailability.disabledByToggle", { defaultValue: "Disabled by toggle" }) };
 
   const diagnostics = !GRAPH_THEME.effects.diagnostics.enabledInDev
-    ? { enabled: false, available: false, reason: "Disabled in production" }
+    ? { enabled: false, available: false, reason: i18n.t("graph:effectAvailability.disabledInProduction", { defaultValue: "Disabled in production" }) }
     : effectsState.diagnosticsEnabled
-      ? { enabled: true, available: true, reason: "Ready" }
-      : { enabled: false, available: false, reason: "Disabled by toggle" };
+      ? { enabled: true, available: true, reason: i18n.t("graph:effectAvailability.ready", { defaultValue: "Ready" }) }
+      : { enabled: false, available: false, reason: i18n.t("graph:effectAvailability.disabledByToggle", { defaultValue: "Disabled by toggle" }) };
 
   return {
     pathPulse,

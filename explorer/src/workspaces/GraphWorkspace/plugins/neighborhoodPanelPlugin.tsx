@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 
+import i18n from "../../../i18n";
 import type { GraphPlugin } from "./types";
 
 const NEIGHBORHOOD_PANEL_ID = "neighborhood-panel";
@@ -14,9 +15,17 @@ function maxWeightBetween(graphRef: any, sourceId: string, targetId: string): nu
 }
 
 function formatNeighborMeta(neighbor: { nodeType: string; degree: number; weight: number }) {
-  const parts = [neighbor.nodeType, `degree ${neighbor.degree}`];
+  const parts = [
+    neighbor.nodeType,
+    i18n.t("graph:neighborhood.degreeMeta", { degree: neighbor.degree, defaultValue: "degree {{degree}}" }),
+  ];
   if (neighbor.weight > 0) {
-    parts.push(`weight ${neighbor.weight.toFixed(2)}`);
+    parts.push(
+      i18n.t("graph:neighborhood.weightMeta", {
+        weight: neighbor.weight.toFixed(2),
+        defaultValue: "weight {{weight}}",
+      }),
+    );
   }
   return parts.join(" · ");
 }
@@ -29,8 +38,8 @@ export const neighborhoodPanelPlugin: GraphPlugin = {
   toolbarItems: (context) => [
     {
       id: "neighborhood-toggle",
-      label: "Neighbors",
-      title: "Toggle neighborhood panel",
+      label: i18n.t("graph:neighborhood.toggleLabel", { defaultValue: "Neighbors" }),
+      title: i18n.t("graph:neighborhood.toggleTitle", { defaultValue: "Toggle neighborhood panel" }),
       active: context.isPanelOpen(NEIGHBORHOOD_PANEL_ID),
       order: 30,
       onClick: () => context.dispatchAction({ type: "togglePanel", panelId: NEIGHBORHOOD_PANEL_ID }),
@@ -46,13 +55,19 @@ export const neighborhoodPanelPlugin: GraphPlugin = {
     if (!selected) {
       return {
         id: NEIGHBORHOOD_PANEL_ID,
-        title: "Neighborhood",
+        title: i18n.t("graph:neighborhood.title", { defaultValue: "Neighborhood" }),
         placement: "bottom",
         order: 20,
         defaultOpen: false,
         preferredWidth: 360,
         preferredHeight: 260,
-        content: <div style={emptyTextStyle}>Select a node to inspect its local neighborhood.</div>,
+        content: (
+          <div style={emptyTextStyle}>
+            {i18n.t("graph:neighborhood.emptyState", {
+              defaultValue: "Select a node to inspect its local neighborhood.",
+            })}
+          </div>
+        ),
       };
     }
 
@@ -91,7 +106,7 @@ export const neighborhoodPanelPlugin: GraphPlugin = {
 
     return {
       id: NEIGHBORHOOD_PANEL_ID,
-      title: "Neighborhood",
+      title: i18n.t("graph:neighborhood.title", { defaultValue: "Neighborhood" }),
       placement: "bottom",
       order: 20,
       defaultOpen: false,
@@ -101,7 +116,10 @@ export const neighborhoodPanelPlugin: GraphPlugin = {
         <div style={panelBodyStyle}>
           <div style={panelEyebrowStyle}>{selected.label}</div>
           <div style={summaryStyle}>
-            {selected.neighborCount.toLocaleString()} direct neighbors in the full graph
+            {i18n.t("graph:neighborhood.directNeighborsSummary", {
+              count: selected.neighborCount.toLocaleString(),
+              defaultValue: "{{count}} direct neighbors in the full graph",
+            })}
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <button
@@ -110,7 +128,7 @@ export const neighborhoodPanelPlugin: GraphPlugin = {
               disabled={!selected.canCollapseNeighborhood || selected.isNeighborhoodCollapsed}
               style={controlButtonStyle}
             >
-              Collapse Neighborhood
+              {i18n.t("graph:neighborhood.collapseButton", { defaultValue: "Collapse Neighborhood" })}
             </button>
             <button
               type="button"
@@ -118,17 +136,27 @@ export const neighborhoodPanelPlugin: GraphPlugin = {
               disabled={!selected.isNeighborhoodCollapsed}
               style={controlButtonStyle}
             >
-              Expand Neighborhood
+              {i18n.t("graph:neighborhood.expandButton", { defaultValue: "Expand Neighborhood" })}
             </button>
           </div>
           {hiddenNeighborCount > 0 ? (
             <div style={summaryStyle}>
-              {hiddenNeighborCount.toLocaleString()} lower-priority neighbors are collapsed in the current view.
+              {i18n.t("graph:neighborhood.hiddenNeighborsSummary", {
+                count: hiddenNeighborCount.toLocaleString(),
+                defaultValue: "{{count}} lower-priority neighbors are collapsed in the current view.",
+              })}
             </div>
           ) : null}
           {aggregatedEdgeCount > 0 ? (
             <div style={summaryStyle}>
-              {aggregatedEdgeCount.toLocaleString()} aggregated structural bundle{aggregatedEdgeCount === 1 ? "" : "s"} visible.
+              {i18n.t("graph:neighborhood.aggregatedBundlesSummary", {
+                count: aggregatedEdgeCount,
+                countLabel: aggregatedEdgeCount.toLocaleString(),
+                defaultValue:
+                  aggregatedEdgeCount === 1
+                    ? "{{countLabel}} aggregated structural bundle visible."
+                    : "{{countLabel}} aggregated structural bundles visible.",
+              })}
             </div>
           ) : null}
           {neighbors.length ? (
@@ -155,7 +183,11 @@ export const neighborhoodPanelPlugin: GraphPlugin = {
               ))}
             </div>
           ) : (
-            <div style={emptyTextStyle}>No direct neighbors are available for this node.</div>
+            <div style={emptyTextStyle}>
+              {i18n.t("graph:neighborhood.noNeighborsEmptyState", {
+                defaultValue: "No direct neighbors are available for this node.",
+              })}
+            </div>
           )}
         </div>
       ),

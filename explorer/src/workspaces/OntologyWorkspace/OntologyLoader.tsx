@@ -9,6 +9,7 @@ import {
   Plus,
   X,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 type LoaderMode = "url" | "file" | "create";
 type CreateMode = "scratch" | "data" | "text";
@@ -110,12 +111,13 @@ function Textarea({
 }
 
 function PreviewCard({ preview }: { preview: OntologyPreview }) {
+  const { t } = useTranslation("ontology");
   return (
     <div style={previewCardStyle}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
         <CheckCircle2 size={16} color="#4cc38a" />
         <span style={{ color: "#4cc38a", fontSize: 12, fontWeight: 700 }}>
-          Preview ready
+          {t("loader.previewReady")}
         </span>
         <Badge label={preview.format} color="#58a6ff" />
       </div>
@@ -128,11 +130,11 @@ function PreviewCard({ preview }: { preview: OntologyPreview }) {
       )}
 
       <div style={previewGridStyle}>
-        <PreviewRow label="Namespace" value={preview.namespace || preview.uri} mono />
-        {preview.version && <PreviewRow label="Version" value={preview.version} />}
-        {preview.license && <PreviewRow label="License" value={preview.license} />}
+        <PreviewRow label={t("loader.namespaceLabel")} value={preview.namespace || preview.uri} mono />
+        {preview.version && <PreviewRow label={t("loader.versionLabel")} value={preview.version} />}
+        {preview.license && <PreviewRow label={t("loader.licenseLabel")} value={preview.license} />}
         <PreviewRow
-          label="Estimated triples"
+          label={t("loader.estimatedTriplesLabel")}
           value={preview.estimated_triples.toLocaleString()}
         />
       </div>
@@ -173,6 +175,7 @@ function PreviewRow({
 // ---------------------------------------------------------------------------
 
 function URLImportPanel({ onLoaded }: { onLoaded: () => void }) {
+  const { t } = useTranslation("ontology");
   const [url, setUrl] = useState("");
   const [format, setFormat] = useState("");
   const [customName, setCustomName] = useState("");
@@ -203,7 +206,7 @@ function URLImportPanel({ onLoaded }: { onLoaded: () => void }) {
       setPreviewState("idle");
     } catch (e) {
       setPreviewState("error");
-      setErrorMsg(e instanceof Error ? e.message : "Could not fetch preview");
+      setErrorMsg(e instanceof Error ? e.message : t("loader.fetchPreviewError"));
     }
   };
 
@@ -233,13 +236,13 @@ function URLImportPanel({ onLoaded }: { onLoaded: () => void }) {
       }, 1200);
     } catch (e) {
       setLoadState("error");
-      setErrorMsg(e instanceof Error ? e.message : "Load failed");
+      setErrorMsg(e instanceof Error ? e.message : t("loader.loadFailedError"));
     }
   };
 
   return (
     <div style={panelBodyStyle}>
-      <FieldGroup label="Ontology URL">
+      <FieldGroup label={t("loader.ontologyUrlLabel")}>
         <div style={{ display: "flex", gap: 8 }}>
           <input
             type="url"
@@ -260,7 +263,7 @@ function URLImportPanel({ onLoaded }: { onLoaded: () => void }) {
             {previewState === "loading" ? (
               <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} />
             ) : (
-              "Fetch Preview"
+              t("loader.fetchPreview")
             )}
           </button>
         </div>
@@ -283,32 +286,32 @@ function URLImportPanel({ onLoaded }: { onLoaded: () => void }) {
           size={13}
           style={{ transform: showAdvanced ? "rotate(180deg)" : undefined, transition: "200ms" }}
         />
-        Advanced options
+        {t("loader.advancedOptions")}
       </button>
 
       {showAdvanced && (
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <FieldGroup label="Format override">
+          <FieldGroup label={t("loader.formatOverrideLabel")}>
             <select
               value={format}
               onChange={(e) => setFormat(e.target.value)}
               style={selectStyle}
             >
-              <option value="">Auto-detect</option>
-              <option value="turtle">Turtle (.ttl)</option>
-              <option value="xml">RDF/XML (.rdf, .owl)</option>
-              <option value="nt">N-Triples (.nt)</option>
-              <option value="json-ld">JSON-LD (.jsonld)</option>
+              <option value="">{t("loader.autoDetect")}</option>
+              <option value="turtle">{t("loader.formatTurtleExt")}</option>
+              <option value="xml">{t("loader.formatRdfXmlExt")}</option>
+              <option value="nt">{t("loader.formatNTriplesExt")}</option>
+              <option value="json-ld">{t("loader.formatJsonLdExt")}</option>
             </select>
           </FieldGroup>
-          <FieldGroup label="Custom display name">
-            <Input value={customName} onChange={setCustomName} placeholder="Leave blank to use ontology title" />
+          <FieldGroup label={t("loader.customNameLabel")}>
+            <Input value={customName} onChange={setCustomName} placeholder={t("loader.customNamePlaceholder")} />
           </FieldGroup>
-          <FieldGroup label="Description">
-            <Input value={description} onChange={setDescription} placeholder="Optional description" />
+          <FieldGroup label={t("loader.descriptionLabel")}>
+            <Input value={description} onChange={setDescription} placeholder={t("loader.descriptionPlaceholder")} />
           </FieldGroup>
-          <FieldGroup label="Tags (comma-separated)">
-            <Input value={tags} onChange={setTags} placeholder="e.g. biology, upper-ontology" />
+          <FieldGroup label={t("loader.tagsLabel")}>
+            <Input value={tags} onChange={setTags} placeholder={t("loader.tagsPlaceholderOntology")} />
           </FieldGroup>
         </div>
       )}
@@ -316,7 +319,7 @@ function URLImportPanel({ onLoaded }: { onLoaded: () => void }) {
       {loadState === "success" && (
         <div style={successBoxStyle}>
           <CheckCircle2 size={13} />
-          <span>Ontology loaded successfully</span>
+          <span>{t("loader.ontologyLoadedSuccess")}</span>
         </div>
       )}
 
@@ -336,12 +339,12 @@ function URLImportPanel({ onLoaded }: { onLoaded: () => void }) {
           {loadState === "loading" ? (
             <>
               <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} />
-              Loading…
+              {t("loader.loading")}
             </>
           ) : (
             <>
               <Globe size={13} />
-              Load Ontology
+              {t("loader.loadOntologyButton")}
             </>
           )}
         </button>
@@ -355,6 +358,7 @@ function URLImportPanel({ onLoaded }: { onLoaded: () => void }) {
 // ---------------------------------------------------------------------------
 
 function FileUploadPanel({ onLoaded }: { onLoaded: () => void }) {
+  const { t } = useTranslation("ontology");
   const fileRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState("");
   const [content, setContent] = useState("");
@@ -405,7 +409,7 @@ function FileUploadPanel({ onLoaded }: { onLoaded: () => void }) {
       }, 1200);
     } catch (e) {
       setLoadState("error");
-      setErrorMsg(e instanceof Error ? e.message : "Load failed");
+      setErrorMsg(e instanceof Error ? e.message : t("loader.loadFailedError"));
     }
   };
 
@@ -430,7 +434,7 @@ function FileUploadPanel({ onLoaded }: { onLoaded: () => void }) {
         ) : (
           <>
             <div style={{ color: "#8fa8c6", fontSize: 13 }}>
-              Drop a file here or <span style={{ color: "#4aa3ff" }}>browse</span>
+              {t("loader.dropzoneText")}<span style={{ color: "#4aa3ff" }}>{t("loader.browseLink")}</span>
             </div>
             <div style={{ color: "#5a7a9a", fontSize: 11 }}>
               .ttl · .rdf · .owl · .xml · .nt · .jsonld · .json · .n3
@@ -447,16 +451,16 @@ function FileUploadPanel({ onLoaded }: { onLoaded: () => void }) {
       </div>
 
       {content && (
-        <FieldGroup label="Format">
+        <FieldGroup label={t("loader.formatLabel")}>
           <select
             value={format}
             onChange={(e) => setFormat(e.target.value)}
             style={selectStyle}
           >
-            <option value="turtle">Turtle</option>
-            <option value="xml">RDF/XML</option>
-            <option value="nt">N-Triples</option>
-            <option value="json-ld">JSON-LD</option>
+            <option value="turtle">{t("loader.formatTurtle")}</option>
+            <option value="xml">{t("loader.formatRdfXml")}</option>
+            <option value="nt">{t("loader.formatNTriples")}</option>
+            <option value="json-ld">{t("loader.formatJsonLd")}</option>
           </select>
         </FieldGroup>
       )}
@@ -464,7 +468,7 @@ function FileUploadPanel({ onLoaded }: { onLoaded: () => void }) {
       {loadState === "success" && (
         <div style={successBoxStyle}>
           <CheckCircle2 size={13} />
-          <span>Ontology loaded successfully — {fileName}</span>
+          <span>{t("loader.fileLoadedSuccess", { fileName })}</span>
         </div>
       )}
 
@@ -484,12 +488,12 @@ function FileUploadPanel({ onLoaded }: { onLoaded: () => void }) {
           {loadState === "loading" ? (
             <>
               <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} />
-              Loading…
+              {t("loader.loading")}
             </>
           ) : (
             <>
               <FileUp size={13} />
-              Load File
+              {t("loader.loadFileButton")}
             </>
           )}
         </button>
@@ -503,6 +507,7 @@ function FileUploadPanel({ onLoaded }: { onLoaded: () => void }) {
 // ---------------------------------------------------------------------------
 
 function CreateNewPanel({ onLoaded }: { onLoaded: () => void }) {
+  const { t } = useTranslation("ontology");
   const [createMode, setCreateMode] = useState<CreateMode>("scratch");
   const [namespace, setNamespace] = useState("https://example.org/ontology/");
   const [name, setName] = useState("");
@@ -541,7 +546,7 @@ function CreateNewPanel({ onLoaded }: { onLoaded: () => void }) {
       }, 1200);
     } catch (e) {
       setCreateState("error");
-      setErrorMsg(e instanceof Error ? e.message : "Create failed");
+      setErrorMsg(e instanceof Error ? e.message : t("loader.createFailedError"));
     }
   };
 
@@ -557,29 +562,29 @@ function CreateNewPanel({ onLoaded }: { onLoaded: () => void }) {
               ...(createMode === m ? modeTabActive : modeTabIdle),
             }}
           >
-            {m === "scratch" ? "From Scratch" : m === "data" ? "From Data" : "From Text"}
+            {m === "scratch" ? t("loader.modeScratch") : m === "data" ? t("loader.modeData") : t("loader.modeText")}
           </button>
         ))}
       </div>
 
-      <FieldGroup label="Display Name *">
-        <Input value={name} onChange={setName} placeholder="My Ontology" />
+      <FieldGroup label={t("loader.displayNameLabel")}>
+        <Input value={name} onChange={setName} placeholder={t("loader.displayNamePlaceholder")} />
       </FieldGroup>
 
-      <FieldGroup label="Namespace URI *">
+      <FieldGroup label={t("loader.namespaceUriLabel")}>
         <Input value={namespace} onChange={setNamespace} placeholder="https://example.org/onto/" />
       </FieldGroup>
 
-      <FieldGroup label="Description">
-        <Input value={description} onChange={setDescription} placeholder="Optional description" />
+      <FieldGroup label={t("loader.descriptionLabel")}>
+        <Input value={description} onChange={setDescription} placeholder={t("loader.descriptionPlaceholder")} />
       </FieldGroup>
 
-      <FieldGroup label="Tags (comma-separated)">
-        <Input value={tags} onChange={setTags} placeholder="e.g. internal, draft" />
+      <FieldGroup label={t("loader.tagsLabel")}>
+        <Input value={tags} onChange={setTags} placeholder={t("loader.tagsPlaceholderCreate")} />
       </FieldGroup>
 
       {createMode === "data" && (
-        <FieldGroup label="Sample Data (JSON or CSV)">
+        <FieldGroup label={t("loader.sampleDataLabel")}>
           <Textarea
             value={sampleData}
             onChange={setSampleData}
@@ -590,11 +595,11 @@ function CreateNewPanel({ onLoaded }: { onLoaded: () => void }) {
       )}
 
       {createMode === "text" && (
-        <FieldGroup label="Schema Requirements (natural language)">
+        <FieldGroup label={t("loader.schemaRequirementsLabel")}>
           <Textarea
             value={schemaText}
             onChange={setSchemaText}
-            placeholder="Describe the ontology you need. E.g.: I need an ontology for a hospital domain with patients, doctors, appointments, and medications."
+            placeholder={t("loader.schemaRequirementsPlaceholder")}
             rows={6}
           />
         </FieldGroup>
@@ -603,7 +608,7 @@ function CreateNewPanel({ onLoaded }: { onLoaded: () => void }) {
       {createState === "success" && (
         <div style={successBoxStyle}>
           <CheckCircle2 size={13} />
-          <span>Ontology created and opened in the Registry</span>
+          <span>{t("loader.ontologyCreatedSuccess")}</span>
         </div>
       )}
 
@@ -623,12 +628,12 @@ function CreateNewPanel({ onLoaded }: { onLoaded: () => void }) {
           {createState === "loading" ? (
             <>
               <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} />
-              Creating…
+              {t("loader.creating")}
             </>
           ) : (
             <>
               <Plus size={13} />
-              Create Ontology
+              {t("loader.createOntologyButton")}
             </>
           )}
         </button>
@@ -642,6 +647,7 @@ function CreateNewPanel({ onLoaded }: { onLoaded: () => void }) {
 // ---------------------------------------------------------------------------
 
 export function OntologyLoader({ onLoaded, onClose }: LoaderProps) {
+  const { t } = useTranslation("ontology");
   const [mode, setMode] = useState<LoaderMode>("url");
 
   return (
@@ -649,9 +655,9 @@ export function OntologyLoader({ onLoaded, onClose }: LoaderProps) {
       <div style={modalStyle}>
         <div style={modalHeaderStyle}>
           <div>
-            <div style={{ color: "#ebf3ff", fontSize: 16, fontWeight: 800 }}>Load Ontology</div>
+            <div style={{ color: "#ebf3ff", fontSize: 16, fontWeight: 800 }}>{t("loader.modalTitle")}</div>
             <div style={{ color: "#8fa8c6", fontSize: 12, marginTop: 2 }}>
-              Import from URL, upload a file, or create a new ontology
+              {t("loader.modalSubtitle")}
             </div>
           </div>
           <button onClick={onClose} style={closeIconBtnStyle}>
@@ -670,11 +676,11 @@ export function OntologyLoader({ onLoaded, onClose }: LoaderProps) {
               }}
             >
               {m === "url" ? (
-                <><Globe size={12} /> URL Import</>
+                <><Globe size={12} /> {t("loader.tabUrlImport")}</>
               ) : m === "file" ? (
-                <><FileUp size={12} /> File Upload</>
+                <><FileUp size={12} /> {t("loader.tabFileUpload")}</>
               ) : (
-                <><Plus size={12} /> Create New</>
+                <><Plus size={12} /> {t("loader.tabCreateNew")}</>
               )}
             </button>
           ))}

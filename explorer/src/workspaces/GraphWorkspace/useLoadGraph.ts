@@ -1,4 +1,5 @@
 ﻿import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { batchMergeEdges, batchMergeNodes, clearGraph } from "../../store/graphStore";
 import type { EdgeAttributes, NodeAttributes } from "../../store/graphStore";
 import { curveGroupForPair, pairRegistryKey } from "../../store/edgePairKeys.js";
@@ -476,6 +477,7 @@ interface UseLoadGraphOptions {
 
 export function useLoadGraph(options: UseLoadGraphOptions = {}) {
   const { enabled = true, onGraphReady, onProgress } = options;
+  const { t } = useTranslation("graph");
 
   return useQuery<GraphLoadSummary>({
     queryKey: ["graph", "full-load"],
@@ -491,7 +493,7 @@ export function useLoadGraph(options: UseLoadGraphOptions = {}) {
         nodesTotal: null,
         edgesLoaded: 0,
         edgesTotal: null,
-        message: "Preparing graph session",
+        message: t("loadingOverlay.preparingSession", "Preparing graph session"),
       }));
 
       const fetchedNodes = await fetchAllNodes(signal, onProgress);
@@ -534,7 +536,7 @@ export function useLoadGraph(options: UseLoadGraphOptions = {}) {
         nodesTotal: fetchedNodes.length,
         edgesLoaded: fetchedEdges.length,
         edgesTotal: fetchedEdges.length,
-        message: "Applying semantic color, sizing, and structural styling",
+        message: t("loadingOverlay.applyingStyling", "Applying semantic color, sizing, and structural styling"),
       }));
 
       const colorAccessor = chooseColorAccessor(draftAttributes);
@@ -688,7 +690,7 @@ export function useLoadGraph(options: UseLoadGraphOptions = {}) {
         nodesTotal: nodesToMerge.length,
         edgesLoaded: edgesToMerge.length,
         edgesTotal: edgesToMerge.length,
-        message: "Preparing renderer and hydrating graph scene",
+        message: t("loadingOverlay.hydratingScene", "Preparing renderer and hydrating graph scene"),
       }));
 
       try {
@@ -728,7 +730,9 @@ export function useLoadGraph(options: UseLoadGraphOptions = {}) {
         nodesTotal: summary.nodeCount,
         edgesLoaded: summary.edgeCount,
         edgesTotal: summary.edgeCount,
-        message: summary.layoutReady ? "Graph ready" : "Settling runtime layout",
+        message: summary.layoutReady
+          ? t("loadingOverlay.title.ready", "Graph ready")
+          : t("loadingOverlay.settlingLayout", "Settling runtime layout"),
         showGraphBehind: !summary.layoutReady,
         layoutSource: summary.layoutSource,
         layoutState: summary.layoutReady ? "interactive" : "bootstrapping",

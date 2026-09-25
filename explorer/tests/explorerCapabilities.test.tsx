@@ -21,6 +21,12 @@ Object.defineProperty(globalThis, "navigator", {
   value: dom.window.navigator,
 });
 
+// Initialise i18next before rendering: components read their labels through
+// useTranslation, which falls back to emitting raw keys without an instance.
+// Imported after the jsdom globals above because the setup reads navigator,
+// localStorage, and document.
+await import("../src/i18n/index.ts");
+
 const { cleanup, render } = await import("@testing-library/react");
 const { ExploreWorkspaceTabs } = await import("../src/ExploreWorkspaceTabs.tsx");
 

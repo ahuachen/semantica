@@ -1,15 +1,10 @@
+import i18n from "../../i18n";
 import type { FocusedUnavailableReason, GroupedViewUnavailableReason } from "./types";
 
-const GROUPED_VIEW_COPY = {
-  "communities-undetected": "Grouped view is unavailable until communities can be detected.",
-  "community-nodes-missing": "Grouped view is unavailable because no community nodes could be created.",
-} as const;
-
-const FOCUSED_MODE_COPY = {
-  "no-selection": "Select a node to inspect in Focused mode.",
-  "grouped-unresolvable": "Focused mode is unavailable for this grouped selection.",
-  "not-in-graph": "Selected item is not available in the current graph.",
-} as const;
+// Resolved per call rather than at module load, so switching language updates
+// the copy without a reload.
+const t = (key: string, vars?: Record<string, string>) =>
+  i18n.t(key as never, { ns: "graph", ...vars }) as string;
 
 export function groupedViewReasonText(
   reason: GroupedViewUnavailableReason | null | undefined,
@@ -20,13 +15,13 @@ export function groupedViewReasonText(
 
   switch (reason.code) {
     case "communities-undetected":
-      return GROUPED_VIEW_COPY["communities-undetected"];
+      return t("viewCopy.groupedCommunitiesUndetected");
     case "community-nodes-missing":
-      return GROUPED_VIEW_COPY["community-nodes-missing"];
+      return t("viewCopy.groupedCommunityNodesMissing");
     case "invalid-community-layout":
-      return `Grouped node ${reason.nodeId} has invalid coordinates.`;
+      return t("viewCopy.groupedInvalidLayout", { nodeId: reason.nodeId });
     case "missing-grouped-node":
-      return `Grouped edge ${reason.edgeId} references a missing grouped node.`;
+      return t("viewCopy.groupedMissingNode", { edgeId: reason.edgeId });
   }
 }
 
@@ -37,5 +32,12 @@ export function focusedUnavailableReasonText(
     return null;
   }
 
-  return FOCUSED_MODE_COPY[reason.code];
+  switch (reason.code) {
+    case "no-selection":
+      return t("viewCopy.focusedNoSelection");
+    case "grouped-unresolvable":
+      return t("viewCopy.focusedGroupedUnresolvable");
+    case "not-in-graph":
+      return t("viewCopy.focusedNotInGraph");
+  }
 }

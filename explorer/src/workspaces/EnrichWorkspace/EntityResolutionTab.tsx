@@ -5,6 +5,7 @@
  * perform one-click merges, and view merge history from the Registry.
  */
 import { useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { ScanSearch, GitMerge, X, ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 import { logEvent, useRegistry } from "../../store/registryStore";
 
@@ -80,6 +81,7 @@ function PairRow({
   onMerge: (primaryId: string, duplicateId: string) => Promise<void>;
   onDismiss: () => void;
 }) {
+  const { t } = useTranslation('workspaces');
   const [expanded, setExpanded] = useState(false);
   const [merging, setMerging] = useState(false);
 
@@ -122,9 +124,9 @@ function PairRow({
             }}
           >
             {merging ? <Loader2 size={12} className="animate-spin" /> : <GitMerge size={12} />}
-            <span>Merge</span>
+            <span>{t('entityResolution.mergeButton')}</span>
           </button>
-          <button onClick={onDismiss} style={iconBtnStyle} title="Dismiss">
+          <button onClick={onDismiss} style={iconBtnStyle} title={t('entityResolution.dismissTitle')}>
             <X size={13} />
           </button>
         </div>
@@ -134,8 +136,8 @@ function PairRow({
       {expanded ? (
         <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
           {[
-            { label: "Primary (keep)", entity: pair.a, accentColor: "#4aa3ff" },
-            { label: "Duplicate (remove)", entity: pair.b, accentColor: "#ff7b72" },
+            { label: t('entityResolution.primaryLabel'), entity: pair.a, accentColor: "#4aa3ff" },
+            { label: t('entityResolution.duplicateLabel'), entity: pair.b, accentColor: "#ff7b72" },
           ].map(({ label, entity, accentColor }) => (
             <div key={entity.id} style={{ ...diffCardStyle, borderColor: `${accentColor}33` }}>
               <div style={{ color: accentColor, fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 6 }}>
@@ -153,6 +155,7 @@ function PairRow({
 }
 
 export function EntityResolutionTab() {
+  const { t } = useTranslation('workspaces');
   const [threshold, setThreshold] = useState(0.82);
   const [scanning, setScanning] = useState(false);
   const [pairs, setPairs] = useState<DedupPair[]>([]);
@@ -226,8 +229,8 @@ export function EntityResolutionTab() {
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <ScanSearch size={18} color="#f2b66d" />
           <div>
-            <div style={{ color: "#ebf3ff", fontSize: 16, fontWeight: 700 }}>Entity Resolution</div>
-            <div style={{ color: "#8b949e", fontSize: 12 }}>Detect and merge duplicate entities in the knowledge graph</div>
+            <div style={{ color: "#ebf3ff", fontSize: 16, fontWeight: 700 }}>{t('entityResolution.title')}</div>
+            <div style={{ color: "#8b949e", fontSize: 12 }}>{t('entityResolution.description')}</div>
           </div>
         </div>
       </div>
@@ -237,7 +240,7 @@ export function EntityResolutionTab() {
         <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
           <div style={{ flex: 1, minWidth: 240 }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-              <label style={{ color: "#c6d4e3", fontSize: 12, fontWeight: 600 }}>Similarity Threshold</label>
+              <label style={{ color: "#c6d4e3", fontSize: 12, fontWeight: 600 }}>{t('entityResolution.thresholdLabel')}</label>
               <span style={{ color: "#f2b66d", fontSize: 12, fontWeight: 700 }}>{threshold.toFixed(2)}</span>
             </div>
             <input
@@ -250,8 +253,8 @@ export function EntityResolutionTab() {
               style={{ width: "100%", accentColor: "#f2b66d", cursor: "pointer" }}
             />
             <div style={{ display: "flex", justifyContent: "space-between", color: "#6a7f97", fontSize: 10, marginTop: 2 }}>
-              <span>More results (0.50)</span>
-              <span>Fewer, higher confidence (0.99)</span>
+              <span>{t('entityResolution.moreResults')}</span>
+              <span>{t('entityResolution.fewerResults')}</span>
             </div>
           </div>
           <button
@@ -260,7 +263,7 @@ export function EntityResolutionTab() {
             style={scanBtnStyle}
           >
             {scanning ? <Loader2 size={14} className="animate-spin" /> : <ScanSearch size={14} />}
-            <span>{scanning ? "Scanning…" : "Run Dedup Scan"}</span>
+            <span>{scanning ? t('entityResolution.scanning') : t('entityResolution.scanButton')}</span>
           </button>
         </div>
         {scanError ? (
@@ -275,9 +278,9 @@ export function EntityResolutionTab() {
             <>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
                 <div style={{ color: "#8b949e", fontSize: 12, fontWeight: 600 }}>
-                  {pairs.length} flagged pair{pairs.length !== 1 ? "s" : ""}
+                  {t('entityResolution.flaggedPairCount', { count: pairs.length })}
                 </div>
-                <button onClick={() => setPairs([])} style={clearAllBtnStyle}>Clear all</button>
+                <button onClick={() => setPairs([])} style={clearAllBtnStyle}>{t('entityResolution.clearAll')}</button>
               </div>
               {pairs.map((pair, index) => (
                 <PairRow
@@ -292,10 +295,10 @@ export function EntityResolutionTab() {
             <div style={emptyStateStyle}>
               <ScanSearch size={36} color="rgba(242,182,109,0.15)" />
               <div style={{ color: "#8b949e", fontSize: 14, marginTop: 12, fontWeight: 500 }}>
-                No flagged pairs
+                {t('entityResolution.noFlaggedPairs')}
               </div>
               <div style={{ color: "#6a7f97", fontSize: 12, marginTop: 4, textAlign: "center", maxWidth: 280 }}>
-                Set a similarity threshold and run a dedup scan to detect potential duplicates.
+                {t('entityResolution.noFlaggedPairsDesc')}
               </div>
             </div>
           )}
@@ -305,7 +308,7 @@ export function EntityResolutionTab() {
         {mergeHistory.length > 0 ? (
           <div style={historyPanelStyle}>
             <div style={{ color: "#8b949e", fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 10 }}>
-              Merge History
+              {t('entityResolution.mergeHistory')}
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               {mergeHistory.map((entry) => (
